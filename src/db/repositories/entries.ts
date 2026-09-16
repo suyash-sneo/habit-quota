@@ -89,9 +89,27 @@ export async function createEntry(input: EntryInput): Promise<EntrySnapshot> {
   return snapshot
 }
 
+/**
+ * A patch distinguishes "leave this alone" from "remove this".
+ *
+ * `undefined` keeps whatever the entry already has, so a caller that does not
+ * mention a field cannot disturb it. `null` clears the field — without that
+ * there is no way to take back a time once one has been recorded, because the
+ * absent value and the unmentioned value would look identical.
+ */
+export interface EntryPatch extends Partial<Omit<EntryInput, 'startTime' | 'endTime'>> {
+  startTime?: MinuteOfDay | null
+  endTime?: MinuteOfDay | null
+}
+
+function patched<T>(next: T | null | undefined, current: T | undefined): T | undefined {
+  if (next === undefined) return current
+  return next ?? undefined
+}
+
 export async function updateEntry(
   entryId: string,
-  patch: Partial<EntryInput>,
+  patch: EntryPatch,
 ): Promise<EntrySnapshot> {
   const current = await db().entryViews.get(entryId)
   if (!current) throw new Error('That entry no longer exists.')
@@ -103,8 +121,8 @@ export async function updateEntry(
     timezoneId: patch.timezoneId ?? current.timezoneId,
     value: patch.value ?? current.value,
     unit: patch.unit ?? current.unit,
-    startTime: patch.startTime !== undefined ? patch.startTime : current.startTime,
-    endTime: patch.endTime !== undefined ? patch.endTime : current.endTime,
+    startTime: patched(patch.startTime, current.startTime),
+    endTime: patched(patch.endTime, current.endTime),
     note: patch.note !== undefined ? patch.note : current.note,
   }
   const next = toSnapshot(entryId, merged, false)

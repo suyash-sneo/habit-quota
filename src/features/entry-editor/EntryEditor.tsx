@@ -23,6 +23,7 @@ import {
   fromTimeInputValue,
   toTimeInputValue,
 } from '../../domain/time/format.ts'
+import { minuteOfDayInZone } from '../../domain/time/zone.ts'
 import { isoWeekOf, startOfWeek } from '../../domain/time/week.ts'
 import { positiveStreak, streakThresholdFor } from '../../domain/streaks/index.ts'
 import styles from './EntryEditor.module.css'
@@ -91,20 +92,34 @@ function EntryForm({
   const duration = habit.trackingModel === 'duration'
   const completion = habit.trackingModel === 'completion'
 
-  const initialStart = negative ? 22 * 60 + 15 : 18 * 60 + 15
+  /** The clock now, in the habit's own zone, rounded down to five minutes. */
+  const nowMinute = (): number =>
+    Math.floor(minuteOfDayInZone(Date.now(), settings.timezoneId) / 5) * 5
 
   const [value, setValue] = useState(() =>
     entry ? String(entry.value) : duration ? '25' : '1',
   )
   const [date, setDate] = useState<LocalDate>(entry?.occurredLocalDate ?? defaultDate)
   const [note, setNote] = useState(entry?.note ?? '')
-  const [start, setStart] = useState(() =>
-    entry ? (entry.startTime === undefined ? '' : toTimeInputValue(entry.startTime)) : toTimeInputValue(initialStart),
-  )
-  const [end, setEnd] = useState(() => {
-    if (entry) return entry.endTime === undefined ? '' : toTimeInputValue(entry.endTime)
-    return toTimeInputValue(initialStart + (duration ? 25 : 45))
+
+  /*
+   * A time is only ever recorded because someone entered one. A new duration
+   * entry therefore starts with none: the event log is the app's source of
+   * truth, and a prefilled clock time would write a session that never happened
+   * at an hour nobody chose. An occurrence is different — it is being logged
+   * because it just happened — so that one defaults to now rather than to a
+   * fixed hour.
+   */
+  const [start, setStart] = useState(() => {
+    if (entry) return entry.startTime === undefined ? '' : toTimeInputValue(entry.startTime)
+    return negative ? toTimeInputValue(nowMinute()) : ''
   })
+  const [end, setEnd] = useState(() =>
+    entry?.endTime === undefined ? '' : toTimeInputValue(entry.endTime),
+  )
+  const [showTimes, setShowTimes] = useState(() =>
+    Boolean(entry && (entry.startTime !== undefined || entry.endTime !== undefined)),
+  )
   const [marked, setMarked] = useState(Boolean(entry))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -124,7 +139,10 @@ function EntryForm({
       ? numericValue !== entry?.value ||
         date !== entry?.occurredLocalDate ||
         note !== (entry?.note ?? '')
-      : note.trim().length > 0 || (duration && numericValue !== 25) || date !== defaultDate)
+      : note.trim().length > 0 ||
+        (duration && numericValue !== 25) ||
+        date !== defaultDate ||
+        (duration && showTimes))
   useDirtyForm(dirty)
 
   const consequences = useEntryConsequences({
@@ -142,6 +160,10 @@ function EntryForm({
   const save = async (): Promise<void> => {
     if (mismatch) {
       setError('Resolve the start and end times before saving.')
+      return
+    }
+    if (duration && endMinutes !== null && startMinutes === null) {
+      setError('Add a start time, or remove the times.')
       return
     }
     const amount = duration ? numericValue : 1
@@ -162,8 +184,9 @@ function EntryForm({
           value: amount,
           occurredLocalDate: date,
           note,
-          startTime: startMinutes ?? undefined,
-          endTime: duration ? (endMinutes ?? undefined) : undefined,
+          // `null`, not `undefined`: clearing the fields has to clear the entry.
+          startTime: startMinutes,
+          endTime: duration ? endMinutes : null,
         })
         showToast('Entry updated · change recorded in history')
       } else {
@@ -245,34 +268,64 @@ function EntryForm({
             </label>
           </div>
 
-          <div className={styles.row}>
-            <div className={styles.col}>
-              <label className="fieldLabel" htmlFor="entry-start">
-                Start
-              </label>
-              <input
-                id="entry-start"
-                className="field"
-                type="time"
-                value={start}
-                onChange={(e) => setStart(e.target.value)}
-              />
-            </div>
-            <div className={styles.col}>
-              <label className="fieldLabel" htmlFor="entry-end">
-                End
-              </label>
-              <input
-                id="entry-end"
-                className="field"
-                type="time"
-                value={end}
-                onChange={(e) => setEnd(e.target.value)}
-              />
-            </div>
-          </div>
+          {showTimes ? (
+            <>
+              <div className={styles.row}>
+                <div className={styles.col}>
+                  <label className="fieldLabel" htmlFor="entry-start">
+                    Start
+                  </label>
+                  <input
+                    id="entry-start"
+                    className="field"
+                    type="time"
+                    value={start}
+                    onChange={(e) => setStart(e.target.value)}
+                  />
+                </div>
+                <div className={styles.col}>
+                  <label className="fieldLabel" htmlFor="entry-end">
+                    End
+                  </label>
+                  <input
+                    id="entry-end"
+                    className="field"
+                    type="time"
+                    value={end}
+                    onChange={(e) => setEnd(e.target.value)}
+                  />
+                </div>
+              </div>
+              <button
+                type="button"
+                className={styles.timesToggle}
+                onClick={() => {
+                  setStart('')
+                  setEnd('')
+                  setShowTimes(false)
+                }}
+              >
+                Remove times
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className={styles.timesToggle}
+              onClick={() => {
+                // Offered as "just finished", which is when this is usually
+                // filled in — and it is visible and editable before it is saved.
+                const endMinute = nowMinute()
+                setEnd(toTimeInputValue(endMinute))
+                setStart(toTimeInputValue(Math.max(0, endMinute - numericValue)))
+                setShowTimes(true)
+              }}
+            >
+              + Add start and end times
+            </button>
+          )}
 
-          {mismatch && span !== null ? (
+          {showTimes && mismatch && span !== null ? (
             <div className={`noticeWarn ${styles.mismatch}`} role="alert">
               <span className="badge" aria-hidden="true">
                 !

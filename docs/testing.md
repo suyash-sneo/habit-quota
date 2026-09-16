@@ -29,6 +29,7 @@ Asserted directly, because they are the ones that would silently lose data:
 - A failed write consumes no device sequence and leaves no partial projection.
 - A failed import leaves the database logically unchanged.
 - A private habit's real name never appears in any stored event.
+- No event records a clock time the user did not enter.
 - No screen scrolls sideways on a phone, and the heatmap scrolls on one axis.
 - Every form control is at least 16px, so iOS Safari never zooms on focus.
 
@@ -85,6 +86,8 @@ Run on real hardware before a release. Nothing here is automatable.
 - [ ] The bottom bar clears the home indicator, and the content clears the notch.
 - [ ] Log an entry; today's figure, the heatmap cell, the streak, the week total
       and the goal all update at once.
+- [ ] Log a session without opening "Add start and end times"; the Timeline
+      shows it as "Time not recorded" rather than inventing an hour.
 - [ ] The heatmap scrolls horizontally, starts at the newest weeks, and does
       not scroll vertically.
 - [ ] Day cells are comfortably tappable despite the small squares.

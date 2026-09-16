@@ -154,13 +154,6 @@ test.describe('first run and daily use', () => {
     await expect(dialog.getByText('30 min').first()).toBeVisible()
     await expect(dialog.getByText('1h', { exact: true }).first()).toBeVisible()
 
-    // Saving is refused while the times still say 30 minutes.
-    await dialog.getByRole('button', { name: 'Save change' }).click()
-    await expect(
-      dialog.getByText('Resolve the start and end times before saving.'),
-    ).toBeVisible()
-
-    await dialog.locator('#entry-end').fill('19:15')
     await dialog.getByRole('button', { name: 'Save change' }).click()
     await expect(dialog).toBeHidden()
 
@@ -168,6 +161,45 @@ test.describe('first run and daily use', () => {
     await page.getByRole('tab', { name: 'Changes' }).click()
     await expect(page.getByText(/Duration changed from 30 to 60 minutes/)).toBeVisible()
     await expect(page.getByText('Entry created')).toBeVisible()
+  })
+
+  test('records a session without a time, and adds one only when asked', async ({ page }) => {
+    await completeOnboarding(page)
+
+    // The whole point: a session is a duration on a day. The clock is optional.
+    await page.getByRole('button', { name: /Log practice/i }).first().click()
+    const sheet = page.getByRole('dialog')
+    await expect(sheet.getByLabel('Start')).toBeHidden()
+    await sheet.getByRole('button', { name: '30 min' }).click()
+    await sheet.getByRole('button', { name: 'Save entry' }).click()
+    await expect(sheet).toBeHidden()
+
+    await page.getByRole('link', { name: 'Timeline' }).first().click()
+    await expect(page.getByText('Time not recorded', { exact: true }).first()).toBeVisible()
+
+    // Adding times later is a deliberate act, and then they are checked against
+    // the duration exactly as before.
+    await page.getByRole('button', { name: /Recorded/ }).first().click()
+    await page.getByRole('button', { name: 'Edit entry' }).click()
+    const editor = page.getByRole('dialog', { name: 'Edit entry' })
+    await editor.getByRole('button', { name: /Add start and end times/i }).click()
+    await editor.locator('#entry-start').fill('18:00')
+    await editor.locator('#entry-end').fill('19:00')
+
+    await editor.getByRole('button', { name: 'Save change' }).click()
+    await expect(editor.getByText('Resolve the start and end times before saving.')).toBeVisible()
+    await editor.getByRole('button', { name: 'Use times' }).click()
+    await editor.getByRole('button', { name: 'Save change' }).click()
+    await expect(editor).toBeHidden()
+    await expect(page.getByText(/6:00.PM\s*–\s*7:00.PM/).first()).toBeVisible()
+
+    // And a time can be taken back again, which an edit could not do before.
+    await page.getByRole('button', { name: /Recorded/ }).first().click()
+    await page.getByRole('button', { name: 'Edit entry' }).click()
+    await editor.getByRole('button', { name: 'Remove times' }).click()
+    await editor.getByRole('button', { name: 'Save change' }).click()
+    await expect(editor).toBeHidden()
+    await expect(page.getByText('Time not recorded', { exact: true }).first()).toBeVisible()
   })
 
   test('deletes with an Undo that restores the entry', async ({ page }) => {
@@ -741,6 +773,8 @@ test.describe('mobile layout', () => {
     await page.getByRole('button', { name: /Log practice/i }).first().click()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
+    // Times are opt-in, so reveal them before measuring them.
+    await dialog.getByRole('button', { name: /Add start and end times/i }).click()
 
     /*
      * iOS draws these as native controls that reset `box-sizing` to
@@ -763,7 +797,11 @@ test.describe('mobile layout', () => {
       }),
     )
 
-    expect(controls.length).toBeGreaterThan(0)
+    expect(controls.map((control) => control.id).sort()).toEqual([
+      'entry-date',
+      'entry-end',
+      'entry-start',
+    ])
     for (const control of controls) {
       expect(control.appearance, `${control.id} keeps its native box`).toBe('none')
       expect(control.boxSizing, `${control.id} is not border-box`).toBe('border-box')

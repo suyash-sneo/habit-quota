@@ -6,6 +6,7 @@ import { renderWithProviders, seedHabit, TEST_TODAY } from '../../test/renderApp
 import { formatLongDate } from '../../domain/time/format.ts'
 import { addDays } from '../../domain/time/civil.ts'
 import { db } from '../../db/database.ts'
+import { listEntriesForHabit } from '../../db/repositories/entries.ts'
 
 const YESTERDAY = addDays(TEST_TODAY, -1)
 const TWO_DAYS_AGO = addDays(TEST_TODAY, -2)
@@ -163,6 +164,28 @@ describe('Home screen', () => {
     })
   })
 
+  it('records no time at all unless one is entered', async () => {
+    const habitId = await seedHabit()
+    await renderHome(habitId)
+
+    const [logButton] = screen.getAllByRole('button', { name: /Log practice/i })
+    await userEvent.click(logButton as HTMLElement)
+    const dialog = await screen.findByRole('dialog')
+
+    // The form offers times rather than presenting them prefilled.
+    expect(within(dialog).queryByLabelText('Start')).not.toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save entry' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+
+    // The stored event carries a date and a value, and no invented clock time.
+    const rows = await listEntriesForHabit(habitId)
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.value).toBe(25)
+    expect(rows[0]?.startTime).toBeUndefined()
+    expect(rows[0]?.endTime).toBeUndefined()
+    expect(rows[0]?.occurredAt).toBeUndefined()
+  })
+
   it('refuses to save when start and end disagree with the duration', async () => {
     const habitId = await seedHabit()
     await renderHome(habitId)
@@ -170,6 +193,11 @@ describe('Home screen', () => {
     const [logButton] = screen.getAllByRole('button', { name: /Log practice/i })
     await userEvent.click(logButton as HTMLElement)
     const dialog = await screen.findByRole('dialog')
+
+    // Times are opt-in, so there is nothing to disagree with until they exist.
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: /Add start and end times/i }),
+    )
     const minutes = within(dialog).getByLabelText('minutes')
     await userEvent.clear(minutes)
     await userEvent.type(minutes, '90')
