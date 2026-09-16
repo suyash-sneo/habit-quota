@@ -82,9 +82,13 @@
 .week {
   display: flex;
   flex-direction: column;
+  /* The week tab is wider than a cell, so centre the squares under it —
+     otherwise the selected-column highlight is offset from the squares. */
+  align-items: center;
   gap: var(--hgap);
   border-radius: 5px;
   background: transparent;
+  padding: 0 2px;
 }
 
 .weekSelected {

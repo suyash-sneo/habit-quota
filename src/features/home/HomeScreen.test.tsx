@@ -148,7 +148,7 @@ describe('Home screen', () => {
     const habitId = await seedHabit()
     await renderHome(habitId)
 
-    const [logButton] = screen.getAllByRole('button', { name: /Log violin/i })
+    const [logButton] = screen.getAllByRole('button', { name: /Log practice/i })
     await userEvent.click(logButton as HTMLElement)
     const dialog = await screen.findByRole('dialog')
     await userEvent.click(within(dialog).getByRole('button', { name: '30 min' }))
@@ -167,7 +167,7 @@ describe('Home screen', () => {
     const habitId = await seedHabit()
     await renderHome(habitId)
 
-    const [logButton] = screen.getAllByRole('button', { name: /Log violin/i })
+    const [logButton] = screen.getAllByRole('button', { name: /Log practice/i })
     await userEvent.click(logButton as HTMLElement)
     const dialog = await screen.findByRole('dialog')
     const minutes = within(dialog).getByLabelText('minutes')

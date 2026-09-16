@@ -390,3 +390,20 @@ export async function restoreSnapshot(snapshotId: string): Promise<void> {
     }
   })
 }
+
+/* ------------------------------------------------------------------- reset */
+
+/**
+ * Delete every local trace of this app: events, projections, device identity,
+ * settings, snapshots and history.
+ *
+ * Irreversible, and it does not touch backup files already saved elsewhere.
+ * The caller is expected to reload afterwards so the app starts from onboarding
+ * with a fresh device identity.
+ */
+export async function deleteAllLocalData(): Promise<void> {
+  const database = db()
+  await database.delete()
+  // Drop the closed handle so the next caller opens a brand-new database.
+  instance = null
+}

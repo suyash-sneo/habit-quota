@@ -27,7 +27,7 @@ function dayCell(page: Page, value: string) {
 
 async function logMinutes(page: Page, minutes: 15 | 30 | 45 | 60): Promise<void> {
   await page
-    .getByRole('button', { name: /Log violin/i })
+    .getByRole('button', { name: /Log practice/i })
     .first()
     .click()
   const dialog = page.getByRole('dialog')
@@ -216,6 +216,55 @@ test.describe('data portability', () => {
     }
   })
 
+  test('deletes every trace of the data and returns to onboarding', async ({ page }) => {
+    await completeOnboarding(page)
+    await logMinutes(page, 30)
+
+    await page.getByRole('link', { name: 'Data' }).first().click()
+    const startOver = page.getByLabel('Start over')
+    await expect(startOver.getByRole('button', { name: 'Export a backup first' })).toBeVisible()
+    await startOver.getByRole('button', { name: 'Delete all data' }).click()
+
+    const dialog = page.getByRole('dialog', { name: 'Delete all data' })
+    const confirm = dialog.getByRole('button', { name: 'Delete everything' })
+    await expect(confirm).toBeDisabled()
+
+    await dialog.getByLabel(/Type delete to confirm/i).fill('delete')
+    await expect(confirm).toBeEnabled()
+    await confirm.click()
+
+    // Back to a genuine first run, not just an empty screen. The app recreates
+    // the database on launch, so the thing to check is that it holds nothing.
+    await expect(page.getByRole('heading', { name: 'Habits' })).toBeVisible()
+
+    const counts = await page.evaluate(
+      () =>
+        new Promise<Record<string, number>>((resolve, reject) => {
+          const request = indexedDB.open('habit-tracker-local-v1')
+          request.onerror = () => reject(new Error('could not open the database'))
+          request.onsuccess = () => {
+            const database = request.result
+            const stores = ['events', 'habitViews', 'entryViews']
+            const tx = database.transaction(stores, 'readonly')
+            const out: Record<string, number> = {}
+            let pending = stores.length
+            for (const store of stores) {
+              const countRequest = tx.objectStore(store).count()
+              countRequest.onsuccess = () => {
+                out[store] = countRequest.result
+                pending -= 1
+                if (pending === 0) {
+                  database.close()
+                  resolve(out)
+                }
+              }
+            }
+          }
+        }),
+    )
+    expect(counts).toEqual({ events: 0, habitViews: 0, entryViews: 0 })
+  })
+
   test('refuses an unreadable file and leaves the database untouched', async ({ page }) => {
     await completeOnboarding(page)
     await logMinutes(page, 30)
@@ -345,6 +394,56 @@ test.describe('platform behaviour', () => {
 })
 
 test.describe('mobile layout', () => {
+  test('keeps the whole log sheet above the browser chrome', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'iphone', 'Mobile-only layout')
+
+    await completeOnboarding(page)
+    await page.getByRole('button', { name: /Log practice/i }).first().click()
+
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+
+    // Scrolled to the end of the sheet, the primary action must sit inside the
+    // visible viewport — not underneath the browser's own bottom toolbar, which
+    // is what `vh` units used to put it behind.
+    const save = dialog.getByRole('button', { name: 'Save entry' })
+    await save.scrollIntoViewIfNeeded()
+    await expect(save).toBeVisible()
+
+    const box = await save.boundingBox()
+    const viewport = page.viewportSize()
+    expect(box?.y ?? -1).toBeGreaterThanOrEqual(0)
+    expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(viewport?.height ?? 0)
+
+    // And the sheet itself never extends past the visible viewport.
+    const sheet = await dialog.boundingBox()
+    expect((sheet?.y ?? 0) + (sheet?.height ?? 0)).toBeLessThanOrEqual((viewport?.height ?? 0) + 1)
+
+    // The unit label sits beside its input rather than off the edge.
+    const unit = dialog.getByText('minutes', { exact: true })
+    const unitBox = await unit.boundingBox()
+    const sheetBox = await dialog.boundingBox()
+    expect((unitBox?.x ?? 0) + (unitBox?.width ?? 0)).toBeLessThanOrEqual(
+      (sheetBox?.x ?? 0) + (sheetBox?.width ?? 0),
+    )
+  })
+
+  test('centres heatmap squares under their week tab', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'iphone', 'Mobile-only layout')
+
+    await completeOnboarding(page)
+    await logMinutes(page, 30)
+
+    const tab = page.getByRole('button', { name: /^Week \d+,/ }).last()
+    const cell = dayCell(page, '30 min')
+    const tabBox = await tab.boundingBox()
+    const cellBox = await cell.boundingBox()
+
+    const tabCentre = (tabBox?.x ?? 0) + (tabBox?.width ?? 0) / 2
+    const cellCentre = (cellBox?.x ?? 0) + (cellBox?.width ?? 0) / 2
+    expect(Math.abs(tabCentre - cellCentre)).toBeLessThanOrEqual(1)
+  })
+
   test('uses the bottom bar and bottom sheets', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'iphone', 'Mobile-only layout')
 

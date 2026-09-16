@@ -12,7 +12,13 @@ import { useApp } from '../../app/providers.tsx'
 import { useDirtyForm } from '../../app/useDirtyForm.ts'
 import { Sheet } from '../../components/Sheet.tsx'
 import { ConflictResolver } from '../conflict-resolution/ConflictResolver.tsx'
-import { commitImport, createSnapshot, db, restoreSnapshot } from '../../db/database.ts'
+import {
+  commitImport,
+  createSnapshot,
+  db,
+  deleteAllLocalData,
+  restoreSnapshot,
+} from '../../db/database.ts'
 import {
   allEvents,
   formatBytes,
@@ -76,6 +82,8 @@ export function DataScreen(): React.JSX.Element {
   const [conflictIndex, setConflictIndex] = useState<number | null>(null)
   const [storage, setStorage] = useState<Awaited<ReturnType<typeof readStorageEstimate>> | null>(null)
   const [busy, setBusy] = useState(false)
+  const [resetOpen, setResetOpen] = useState(false)
+  const [resetConfirmation, setResetConfirmation] = useState('')
 
   useDirtyForm(importState.phase === 'preview' || importState.phase === 'committing')
 
@@ -314,6 +322,22 @@ export function DataScreen(): React.JSX.Element {
     }
   }
 
+  const resetEverything = async (): Promise<void> => {
+    setBusy(true)
+    try {
+      await deleteAllLocalData()
+      // A full reload is the honest way back to a clean slate: it rebuilds the
+      // device identity, the settings and every open live query from nothing.
+      window.location.replace(`${import.meta.env.BASE_URL}#/`)
+      window.location.reload()
+    } catch (error) {
+      setBusy(false)
+      showToast(error instanceof Error ? error.message : 'The data could not be deleted.', {
+        tone: 'bad',
+      })
+    }
+  }
+
   /* --------------------------------------------------------------- view */
 
   const activeConflict =
@@ -469,6 +493,39 @@ export function DataScreen(): React.JSX.Element {
                 No exports yet. An export records its date, event count and coverage here.
               </p>
             )}
+          </section>
+
+          <section className="card" aria-label="Start over">
+            <h2 className={styles.cardTitle}>Start over</h2>
+            <p className={styles.hint} style={{ marginTop: 0 }}>
+              Deletes every habit, entry and goal stored in this browser and returns the app to its
+              first-run state. Useful before restoring a backup from another device, and while you
+              are still trying things out.
+            </p>
+            <p className={styles.hint}>
+              This cannot be undone, and it does not touch backup files you have already saved.
+            </p>
+            <div className={styles.buttonRow}>
+              <button
+                type="button"
+                className="btnSecondary"
+                onClick={() => void openExport()}
+                disabled={busy}
+              >
+                Export a backup first
+              </button>
+              <button
+                type="button"
+                className="btnDanger"
+                onClick={() => {
+                  setResetConfirmation('')
+                  setResetOpen(true)
+                }}
+                disabled={busy}
+              >
+                Delete all data
+              </button>
+            </div>
           </section>
 
           {importRows?.length ? (
@@ -816,6 +873,66 @@ export function DataScreen(): React.JSX.Element {
             </div>
           </>
         )}
+      </Sheet>
+
+      {/* Start over */}
+      <Sheet
+        open={resetOpen}
+        title="Delete all data"
+        onClose={() => setResetOpen(false)}
+        description="This removes everything this browser has stored for the app and cannot be undone."
+      >
+        <div className={styles.exportSummary}>
+          <div className={styles.factRow}>
+            <span className={styles.factLabel}>Events</span>
+            <span className="num">{formatCount(report?.eventCount ?? 0)}</span>
+          </div>
+          <div className={styles.factRow}>
+            <span className={styles.factLabel}>Habits</span>
+            <span className="num">{formatCount(habitsById?.size ?? 0)}</span>
+          </div>
+          <div className={styles.factRow}>
+            <span className={styles.factLabel}>Coverage</span>
+            <span className="num">
+              {report?.coverage.earliestLocalDate
+                ? `${report.coverage.earliestLocalDate} – ${report.coverage.latestLocalDate}`
+                : 'Nothing recorded yet'}
+            </span>
+          </div>
+        </div>
+
+        <p className={styles.hint}>
+          Backup files you have already saved are untouched, and you can import one afterwards.
+        </p>
+
+        <div style={{ marginTop: 16 }}>
+          <label className="fieldLabel" htmlFor="reset-confirm">
+            Type <strong>delete</strong> to confirm
+          </label>
+          <input
+            id="reset-confirm"
+            className="field"
+            type="text"
+            autoComplete="off"
+            spellCheck={false}
+            value={resetConfirmation}
+            onChange={(e) => setResetConfirmation(e.target.value)}
+          />
+        </div>
+
+        <div className={styles.buttonRow}>
+          <button type="button" className="btnSecondary" onClick={() => setResetOpen(false)}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btnDanger"
+            disabled={busy || resetConfirmation.trim().toLowerCase() !== 'delete'}
+            onClick={() => void resetEverything()}
+          >
+            {busy ? 'Deleting…' : 'Delete everything'}
+          </button>
+        </div>
       </Sheet>
 
       {/* Conflicts */}

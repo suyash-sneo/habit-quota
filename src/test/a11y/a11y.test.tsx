@@ -68,7 +68,7 @@ describe('accessibility baseline', () => {
       route: `/habit/${habitId}`,
       path: '/habit/:habitId',
     })
-    const [logButton] = await screen.findAllByRole('button', { name: /Log violin/i })
+    const [logButton] = await screen.findAllByRole('button', { name: /Log practice/i })
     await userEvent.click(logButton as HTMLElement)
     await screen.findByRole('dialog')
     await expectNoViolations(container)

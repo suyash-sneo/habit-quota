@@ -9,6 +9,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../../app/providers.tsx'
+import { HelpTip } from '../../components/HelpTip.tsx'
+import { thresholdCopy } from '../streak-threshold.ts'
 import { createHabit, defaultLogLabel, PRIVATE_DISPLAY_NAME } from '../../db/repositories/habits.ts'
 import { createGoal } from '../../db/repositories/goals.ts'
 import { metricForModel } from '../../domain/goals/index.ts'
@@ -44,6 +46,7 @@ export function OnboardingScreen(): React.JSX.Element {
   const [threshold, setThreshold] = useState('10')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const streakCopy = thresholdCopy(model)
 
   useEffect(() => {
     heading.current?.focus()
@@ -173,7 +176,7 @@ export function OnboardingScreen(): React.JSX.Element {
             className="field"
             type="text"
             value={name}
-            placeholder="e.g. Violin practice"
+            placeholder="e.g. Reading"
             disabled={masked}
             onChange={(e) => setName(e.target.value)}
           />
@@ -225,21 +228,36 @@ export function OnboardingScreen(): React.JSX.Element {
             </span>
           </button>
 
-          <div style={{ marginTop: 14 }}>
-            <label className="fieldLabel" htmlFor="onboard-threshold">
-              A day counts toward a streak at
-            </label>
-            <input
-              id="onboard-threshold"
-              className="field num"
-              style={{ width: 140 }}
-              type="number"
-              inputMode="numeric"
-              min={1}
-              value={threshold}
-              onChange={(e) => setThreshold(e.target.value)}
-            />
-          </div>
+          {streakCopy.applies ? (
+            <div style={{ marginTop: 14 }}>
+              <span className="labelRow">
+                <label className="fieldLabel" htmlFor="onboard-threshold">
+                  {streakCopy.label}
+                </label>
+                <HelpTip id="onboard-threshold-help" label={streakCopy.label}>
+                  {streakCopy.explanation}
+                </HelpTip>
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <input
+                  id="onboard-threshold"
+                  className="field num"
+                  style={{ width: 140, flex: '0 0 auto' }}
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  value={threshold}
+                  onChange={(e) => setThreshold(e.target.value)}
+                  aria-describedby="onboard-threshold-help"
+                />
+                <span style={{ fontSize: 13.5, color: 'var(--ink2)' }}>{streakCopy.unit}</span>
+              </div>
+            </div>
+          ) : (
+            <p style={{ fontSize: 12.5, color: 'var(--ink3)', marginTop: 14 }}>
+              {streakCopy.explanation}
+            </p>
+          )}
         </section>
 
         {error ? (

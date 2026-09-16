@@ -106,10 +106,17 @@ contains no habit data — purely so you can write it down. Nothing is transmitt
 
 ## Destructive actions
 
-Only one action deletes data: **Delete all local data** on the recovery screen.
-It is placed last, labelled as a last resort, and requires confirmation. The
-recovery screen offers "Export what can be read" first, because the useful order
-is almost always export, then repair.
+Two actions delete data, and both put an export in front of you first.
+
+**Start over**, on the Data screen, is the ordinary route: it deletes every
+habit, entry, goal, snapshot and setting this browser holds and returns the app
+to its first run. It shows what will be lost, states that saved backup files are
+untouched, and requires you to type `delete`. Use it before restoring a backup
+from another device, or to clear out test data.
+
+**Delete all local data**, on the recovery screen, is the same destruction
+reached from a broken app. It is placed last, labelled as a last resort, and
+confirmed, because the useful order is almost always export, then repair.
 
 ## Not yet built
 

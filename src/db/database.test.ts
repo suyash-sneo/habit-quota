@@ -127,7 +127,7 @@ describe('habit repository', () => {
     expect(row?.displayName).toBe('Violin practice')
     expect(row?.unit).toBe('minutes')
     expect(row?.archivedFlag).toBe(0)
-    expect(row?.logLabel).toBe('Log violin')
+    expect(row?.logLabel).toBe('Log practice')
   })
 
   it('stores a private habit only as "Private"', async () => {
@@ -513,5 +513,40 @@ describe('import commit', () => {
     expect(report.eventCount).toBe(2)
     // Sequences 1-11 from that device are genuinely absent.
     expect(report.missingSequenceCount).toBe(11)
+  })
+})
+
+describe('starting over', () => {
+  it('removes every trace of the local data', async () => {
+    const habit = await makeHabit()
+    await createEntry({
+      habitId: habit.habitId,
+      occurredLocalDate: TODAY,
+      timezoneId: TZ,
+      value: 25,
+      unit: 'minutes',
+    })
+    await createSnapshot('pre-merge')
+    expect(await db().events.count()).toBeGreaterThan(0)
+
+    const { deleteAllLocalData } = await import('./database.ts')
+    await deleteAllLocalData()
+
+    // The next caller gets a brand-new, empty database rather than a closed one.
+    expect(await db().events.count()).toBe(0)
+    expect(await db().habitViews.count()).toBe(0)
+    expect(await db().entryViews.count()).toBe(0)
+    expect(await db().snapshots.count()).toBe(0)
+    expect(await db().devices.count()).toBe(0)
+    expect(await db().meta.count()).toBe(0)
+  })
+
+  it('issues a fresh device identity afterwards', async () => {
+    const before = await ensureThisDevice()
+    const { deleteAllLocalData } = await import('./database.ts')
+    await deleteAllLocalData()
+    const after = await ensureThisDevice()
+    expect(after.deviceId).not.toBe(before.deviceId)
+    expect(after.nextSequence).toBe(1)
   })
 })

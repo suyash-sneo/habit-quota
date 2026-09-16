@@ -29,8 +29,19 @@
   margin-top: 14px;
 }
 
-.narrowField {
+/*
+ * Beats the global `.field { width: 100% }` on specificity rather than relying
+ * on stylesheet order — otherwise the input fills the row and shoves its unit
+ * label off the edge of the sheet.
+ */
+.inlineRow .narrowField {
   width: 110px;
+  flex: 0 0 auto;
+}
+
+.inlineRow .unit {
+  font-size: 13.5px;
+  color: var(--ink2);
   flex: 0 0 auto;
 }
 

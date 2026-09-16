@@ -60,6 +60,7 @@
   --sheetW: 560px;
   --sheetR: 14px;
   --sheetMax: 86vh;
+  --sheetMax: 86dvh;
 
   color-scheme: dark;
 }
@@ -129,5 +130,6 @@
     --sheetW: 100%;
     --sheetR: 18px 18px 0 0;
     --sheetMax: 88vh;
+    --sheetMax: 88dvh;
   }
 }

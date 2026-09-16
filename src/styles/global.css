@@ -149,6 +149,17 @@ textarea.field {
   margin-bottom: 6px;
 }
 
+/* Keeps a help tip on the same line as the label it explains. */
+.labelRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.labelRow .fieldLabel {
+  margin-bottom: 0;
+}
+
 .fieldReadonly {
   min-height: 48px;
   display: flex;

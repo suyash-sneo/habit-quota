@@ -36,7 +36,10 @@ deleted, and what arrived from another device.
 
 **Data** is application-wide: event count, coverage, sequence integrity, browser
 storage status, export, and a merge preview that tells you exactly what an import
-would add before anything is written.
+would add before anything is written. It also has **Start over**, which deletes
+everything this browser holds and returns the app to its first run — useful
+before restoring a backup from another device. It offers an export first and
+asks you to type `delete` to confirm.
 
 Four tracking models are supported — duration, completion, count, and negative
 occurrence. A negative habit is treated differently throughout: a restrained
@@ -184,7 +187,7 @@ tweak that breaks WCAG AA fails the build.
 ## Testing
 
 ```bash
-npm test              # 232 unit, database, component and a11y tests
+npm test              # 259 unit, database, component and a11y tests
 npm run test:e2e      # Playwright: Chromium, WebKit, iPhone viewport
 ```
 

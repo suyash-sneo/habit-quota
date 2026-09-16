@@ -27,6 +27,11 @@ export interface CreateHabitInput {
 /**
  * Default verb for the primary button, derived from the habit name.
  *
+ * The activity is the *last* word, not the first: "Violin practice" becomes
+ * "Log practice" and "MARL study" becomes "Log study". An all-caps word is an
+ * acronym and keeps its capitals, so a habit simply called "MARL" reads
+ * "Log MARL" rather than "Log marl".
+ *
  * A private habit never contributes its words: the label is always the neutral
  * "Log event".
  */
@@ -36,9 +41,11 @@ export function defaultLogLabel(input: {
   isPrivate: boolean
 }): string {
   if (input.isPrivate || input.trackingModel === 'negative-occurrence') return 'Log event'
-  const firstWord = input.displayName.trim().split(/\s+/)[0]?.toLowerCase()
-  if (!firstWord) return 'Log entry'
-  return `Log ${firstWord}`
+  const words = input.displayName.trim().split(/\s+/).filter(Boolean)
+  const activity = words[words.length - 1]
+  if (!activity) return 'Log entry'
+  const isAcronym = activity.length > 1 && activity === activity.toUpperCase()
+  return `Log ${(isAcronym ? activity : activity.toLowerCase()).slice(0, 24)}`
 }
 
 export async function listHabits(includeArchived = false): Promise<HabitViewRow[]> {

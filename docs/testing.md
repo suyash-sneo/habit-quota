@@ -57,6 +57,10 @@ Run on real hardware before a release. Nothing here is automatable.
 - [ ] Sheets open from the bottom and dismiss on tapping the scrim.
 - [ ] The keyboard does not cover the field being typed into.
 - [ ] Force-quit and reopen; the data is still there.
+- [ ] Open the log sheet: the whole form, including Save, clears the browser's
+      bottom toolbar, and the "minutes" label sits beside its input.
+- [ ] Tap the "?" beside a streak field; the explanation opens and dismisses.
+- [ ] Data → Start over deletes everything and lands on onboarding.
 - [ ] Enable Airplane Mode and relaunch; the app opens and logging still works.
 - [ ] Export a backup through the Files picker to iCloud Drive.
 - [ ] Import that file on a second device; the preview counts look right and the

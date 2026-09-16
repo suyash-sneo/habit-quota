@@ -7,6 +7,8 @@
 
 import { useMemo, useState } from 'react'
 import { Sheet } from '../../components/Sheet.tsx'
+import { HelpTip } from '../../components/HelpTip.tsx'
+import { thresholdCopy } from '../streak-threshold.ts'
 import { useApp } from '../../app/providers.tsx'
 import { useDirtyForm } from '../../app/useDirtyForm.ts'
 import { createHabit, defaultLogLabel, PRIVATE_DISPLAY_NAME } from '../../db/repositories/habits.ts'
@@ -57,6 +59,7 @@ function AddHabitForm({ onClose, onCreated }: AddHabitSheetProps): React.JSX.Ele
 
   const previewName = masked ? PRIVATE_DISPLAY_NAME : name.trim() || 'New habit'
   const negative = model === 'negative-occurrence'
+  const streakCopy = thresholdCopy(model)
 
   const previewValue = negative ? '0 days' : model === 'duration' ? '0 min' : 'Not yet'
   const previewLabel = negative ? 'Since last event' : 'Today'
@@ -184,20 +187,28 @@ function AddHabitForm({ onClose, onCreated }: AddHabitSheetProps): React.JSX.Ele
       </button>
 
       <div className={styles.row}>
-        <div className={styles.col}>
-          <label className="fieldLabel" htmlFor="new-habit-threshold">
-            Streak qualifies at
-          </label>
-          <input
-            id="new-habit-threshold"
-            className="field"
-            type="number"
-            inputMode="numeric"
-            min={1}
-            value={threshold}
-            onChange={(e) => setThreshold(e.target.value)}
-          />
-        </div>
+        {streakCopy.applies ? (
+          <div className={styles.col}>
+            <span className="labelRow">
+              <label className="fieldLabel" htmlFor="new-habit-threshold">
+                {streakCopy.label}
+              </label>
+              <HelpTip id="new-habit-threshold-help" label={streakCopy.label}>
+                {streakCopy.explanation}
+              </HelpTip>
+            </span>
+            <input
+              id="new-habit-threshold"
+              className="field"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              value={threshold}
+              onChange={(e) => setThreshold(e.target.value)}
+              aria-describedby="new-habit-threshold-help"
+            />
+          </div>
+        ) : null}
         <div className={styles.col}>
           <label className="fieldLabel" htmlFor="new-habit-goal">
             {negative ? 'Weekly maximum (optional)' : 'Weekly goal (optional)'}

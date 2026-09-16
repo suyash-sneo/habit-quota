@@ -1,6 +1,13 @@
 .overlay {
   position: fixed;
   inset: 0;
+  /*
+   * `inset: 0` resolves against the large viewport, which on mobile Chrome
+   * extends underneath the browser's bottom toolbar. Pinning the height to the
+   * dynamic viewport keeps a bottom-aligned sheet fully on screen.
+   */
+  height: 100vh;
+  height: 100dvh;
   z-index: 40;
   display: flex;
   align-items: var(--sheetAlign);

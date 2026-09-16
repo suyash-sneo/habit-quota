@@ -240,7 +240,7 @@ function EntryForm({
               value={value}
               onChange={(e) => setValue(e.target.value)}
             />
-            <label htmlFor="entry-minutes" style={{ fontSize: 13.5, color: 'var(--ink2)' }}>
+            <label htmlFor="entry-minutes" className={styles.unit}>
               minutes
             </label>
           </div>
@@ -334,7 +334,7 @@ function EntryForm({
             value={value}
             onChange={(e) => setValue(e.target.value)}
           />
-          <label htmlFor="entry-count" style={{ fontSize: 13.5, color: 'var(--ink2)' }}>
+          <label htmlFor="entry-count" className={styles.unit}>
             {habit.unit}
           </label>
         </div>
@@ -379,7 +379,7 @@ function EntryForm({
           className="field"
           rows={2}
           value={note}
-          placeholder={negative ? 'Stays on this device' : 'e.g. Scales and bowing'}
+          placeholder={negative ? 'Stays on this device' : 'e.g. what you worked on'}
           onChange={(e) => setNote(e.target.value)}
         />
       </div>

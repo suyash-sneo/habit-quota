@@ -8,6 +8,8 @@
 
 import { useState } from 'react'
 import { Sheet } from '../../components/Sheet.tsx'
+import { HelpTip } from '../../components/HelpTip.tsx'
+import { thresholdCopy } from '../streak-threshold.ts'
 import { useApp } from '../../app/providers.tsx'
 import { useDirtyForm } from '../../app/useDirtyForm.ts'
 import { createGoal, deleteGoal, updateGoal } from '../../db/repositories/goals.ts'
@@ -88,6 +90,7 @@ function GoalForm({ habit, goals, goalId, onClose }: GoalEditorProps): React.JSX
   const [weekStartsOn, setWeekStartsOn] = useState<IsoWeekday>(settings.weekStartsOn)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const threshold_copy = thresholdCopy(habit.trackingModel)
 
   useDirtyForm(!saving)
 
@@ -279,30 +282,36 @@ function GoalForm({ habit, goals, goalId, onClose }: GoalEditorProps): React.JSX
         </div>
       </div>
 
-      <div style={{ marginTop: 14 }}>
-        <label className="fieldLabel" htmlFor="goal-threshold">
-          Streak qualifies at
-        </label>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <input
-            id="goal-threshold"
-            className="field num"
-            style={{ width: 110, flex: '0 0 auto' }}
-            type="number"
-            inputMode="numeric"
-            min={1}
-            value={threshold}
-            onChange={(e) => setThreshold(e.target.value)}
-          />
-          <span style={{ fontSize: 13.5, color: 'var(--ink2)' }}>
-            {duration
-              ? 'minutes in a local day'
-              : negative
-                ? 'event resets the interval'
-                : 'session in a local day'}
+      {threshold_copy.applies ? (
+        <div style={{ marginTop: 14 }}>
+          <span className="labelRow">
+            <label className="fieldLabel" htmlFor="goal-threshold">
+              {threshold_copy.label}
+            </label>
+            <HelpTip id="goal-threshold-help" label={threshold_copy.label}>
+              {threshold_copy.explanation}
+            </HelpTip>
           </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <input
+              id="goal-threshold"
+              className="field num"
+              style={{ width: 110, flex: '0 0 auto' }}
+              type="number"
+              inputMode="numeric"
+              min={1}
+              value={threshold}
+              onChange={(e) => setThreshold(e.target.value)}
+              aria-describedby="goal-threshold-help"
+            />
+            <span style={{ fontSize: 13.5, color: 'var(--ink2)' }}>{threshold_copy.unit}</span>
+          </div>
         </div>
-      </div>
+      ) : (
+        <p style={{ fontSize: 12.5, color: 'var(--ink3)', marginTop: 14 }}>
+          {threshold_copy.explanation}
+        </p>
+      )}
 
       <p style={{ fontSize: 12.5, color: 'var(--ink3)', marginTop: 14 }}>
         Changes apply to future calculations. The previous goal definition is kept in the change

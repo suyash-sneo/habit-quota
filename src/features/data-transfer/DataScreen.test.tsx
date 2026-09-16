@@ -281,4 +281,33 @@ describe('Data screen', () => {
       expect(await db().entryViews.count()).toBe(0)
     })
   })
+
+  it('refuses to delete everything until the confirmation is typed', async () => {
+    await seedHabit({ days: { [TEST_TODAY]: 25 } })
+    await renderData()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Delete all data' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Delete all data' })
+    expect(within(dialog).getByText(/cannot be undone/i)).toBeInTheDocument()
+
+    const confirm = within(dialog).getByRole('button', { name: 'Delete everything' })
+    expect(confirm).toBeDisabled()
+
+    await userEvent.type(within(dialog).getByLabelText(/Type delete to confirm/i), 'nope')
+    expect(confirm).toBeDisabled()
+
+    await userEvent.clear(within(dialog).getByLabelText(/Type delete to confirm/i))
+    await userEvent.type(within(dialog).getByLabelText(/Type delete to confirm/i), 'delete')
+    expect(confirm).toBeEnabled()
+
+    // Nothing has been touched while the dialog is merely open.
+    expect(await db().events.count()).toBeGreaterThan(0)
+  })
+
+  it('offers an export before the destructive path', async () => {
+    await seedHabit({ days: { [TEST_TODAY]: 25 } })
+    await renderData()
+    const section = screen.getByLabelText('Start over')
+    expect(within(section).getByRole('button', { name: 'Export a backup first' })).toBeInTheDocument()
+  })
 })
