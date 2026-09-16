@@ -97,7 +97,13 @@
   gap: var(--hgap);
   border-radius: 5px;
   background: transparent;
-  padding: 0 2px;
+  /*
+   * The selected column's tint needs room on all four sides. It already had it
+   * at the top, where the week tab sits above the first square, and 2px at each
+   * side — but nothing below the last square, so the tint stopped dead on Sunday
+   * and read as though the column had been cut off.
+   */
+  padding: 0 2px 4px;
 }
 
 .weekSelected {

@@ -41,13 +41,39 @@ Asserted directly, because they are the ones that would silently lose data:
   out reloading a page under offline emulation, so iOS offline behaviour is on the
   manual checklist below.
 - **Native date and time controls** are drawn by the platform, and headless
-  WebKit draws them as ordinary text boxes. Their real width on iOS depends on
-  the locale's date format and cannot be measured here, so the layout is built
-  not to depend on it: below 560px every field takes the full width of its form.
-  The tests assert that arrangement rather than the resulting pixels.
+  WebKit draws them as ordinary text boxes. iOS 26 gives them `box-sizing:
+  content-box`, so `width: 100%` resolves to the container *plus* the field's
+  padding and the control overflows by exactly that much; iOS 18 sizes them to
+  their content instead. Neither happens here, so the suite asserts the property
+  that suppresses the native box (`appearance: none`) rather than the pixels it
+  produces. The pixels were measured by hand on an iOS 26 simulator — see below.
 - **The File System Access picker** opens a native dialog no automated run can
   drive. The end-to-end test exercises the download fallback — the path iOS Safari
   and Firefox take — and the picker is checked by hand on desktop Chrome.
+
+## Checking a layout on a real iOS engine
+
+Playwright's WebKit is not the WebKit on a phone, and the differences are
+concentrated in exactly the places that break layouts: native form controls,
+dynamic viewport units, and the browser's own chrome. When a mobile layout bug
+cannot be reproduced in the suite, drive a simulator instead of guessing.
+
+```bash
+xcrun simctl list devices available          # pick a current iOS runtime
+xcrun simctl boot "iPhone 17 Pro"
+BASE_PATH=/ npm run build
+(cd dist && python3 -m http.server 8899)     # the simulator reaches the host
+xcrun simctl openurl <udid> http://localhost:8899/
+```
+
+Two things save a lot of time. Have the page **print its own measurements** into
+a fixed overlay and read those, rather than measuring a screenshot — a
+screenshot cannot tell you a computed `box-sizing`. And serve that probe as a
+**separate file**, because the app's CSP (`script-src 'self'`) blocks an inline
+script, exactly as it should.
+
+Test against a current runtime. iOS 18 and iOS 26 disagree about native date
+control sizing, and only one of them matches what people are running.
 
 ## iPhone acceptance checklist
 

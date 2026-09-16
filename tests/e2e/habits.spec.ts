@@ -731,6 +731,45 @@ test.describe('mobile layout', () => {
       await expect(dialog).toBeHidden()
     }
   })
+
+  test('keeps native date and time controls inside their field box', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'iphone', 'Mobile-only layout')
+
+    await completeOnboarding(page)
+    await page.getByRole('button', { name: /Log practice/i }).first().click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+
+    /*
+     * iOS draws these as native controls that reset `box-sizing` to
+     * content-box, so `width: 100%` resolves to the container plus the field's
+     * padding and the control runs off the edge of the sheet. This engine does
+     * not do that — it draws them as ordinary text boxes — so the measurement
+     * below cannot fail here. What it can check is that the property which
+     * suppresses the native box is still applied; that is the whole fix.
+     */
+    const controls = await dialog.evaluate((sheet) =>
+      [...sheet.querySelectorAll('input[type="date"], input[type="time"]')].map((el) => {
+        const style = getComputedStyle(el)
+        const parent = el.parentElement!.getBoundingClientRect()
+        return {
+          id: el.id,
+          appearance: style.webkitAppearance || style.appearance,
+          boxSizing: style.boxSizing,
+          overflowsParent: Math.round(el.getBoundingClientRect().width - parent.width) > 0,
+        }
+      }),
+    )
+
+    expect(controls.length).toBeGreaterThan(0)
+    for (const control of controls) {
+      expect(control.appearance, `${control.id} keeps its native box`).toBe('none')
+      expect(control.boxSizing, `${control.id} is not border-box`).toBe('border-box')
+      expect(control.overflowsParent, `${control.id} is wider than its field`).toBe(false)
+    }
+  })
 })
 
 

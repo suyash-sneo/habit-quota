@@ -133,6 +133,28 @@
   opacity: 0.6;
 }
 
+/*
+ * Date and time inputs, which iOS draws as native controls.
+ *
+ * Those controls reset `box-sizing` to `content-box`, so `width: 100%` resolves
+ * to the full container *plus* this field's 26px of horizontal padding and the
+ * control overflows its box by exactly that much — off the edge of the sheet.
+ * `max-width: 100%` cannot rein it in, because that resolves against the
+ * content box too. Turning the native appearance off restores border-box and
+ * the geometry every other field already has; tapping still opens the picker.
+ *
+ * Measured on an iOS 26 simulator. iOS 18 sizes the same controls to their
+ * content instead, and Playwright's WebKit draws them as ordinary text boxes,
+ * which is why this can only be caught by hand on a current device.
+ */
+input[type='date'],
+input[type='time'],
+input[type='datetime-local'] {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+}
+
 textarea.field {
   padding: 11px 13px;
   font-size: 14.5px;
