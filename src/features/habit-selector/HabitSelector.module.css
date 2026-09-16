@@ -258,9 +258,15 @@
   margin-top: 14px;
 }
 
+/*
+ * Two fields share a line only when each has room for its own label — these
+ * are uppercase and letter-spaced, so they need most of 260px. Below that the
+ * row stacks. At 140px two columns stayed side by side even on a phone, where
+ * every label then wrapped over three lines inside its half.
+ */
 .col {
   flex: 1;
-  min-width: 140px;
+  min-width: 260px;
 }
 
 .actions {

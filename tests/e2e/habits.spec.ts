@@ -36,6 +36,36 @@ async function logMinutes(page: Page, minutes: 15 | 30 | 45 | 60): Promise<void>
   await expect(dialog).toBeHidden()
 }
 
+/**
+ * Every element whose right edge lies past the viewport, ignoring anything
+ * inside a container that declares a horizontal scroller — those are the only
+ * places sideways movement is intended.
+ */
+async function sidewaysOverflow(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const limit = document.documentElement.clientWidth
+    const offenders: string[] = []
+    for (const el of Array.from(document.querySelectorAll('*'))) {
+      const box = el.getBoundingClientRect()
+      if (box.width === 0 && box.height === 0) continue
+      if (box.right <= limit + 0.5) continue
+      let ancestor = el.parentElement
+      let inScroller = false
+      while (ancestor) {
+        const overflowX = getComputedStyle(ancestor).overflowX
+        if (overflowX === 'auto' || overflowX === 'scroll') {
+          inScroller = true
+          break
+        }
+        ancestor = ancestor.parentElement
+      }
+      if (inScroller) continue
+      offenders.push(`<${el.tagName.toLowerCase()} class="${el.className}"> right=${Math.round(box.right)} of ${limit}`)
+    }
+    return offenders
+  })
+}
+
 test.describe('first run and daily use', () => {
   test('onboards, logs, and shows progress', async ({ page }) => {
     await completeOnboarding(page)
@@ -466,4 +496,134 @@ test.describe('mobile layout', () => {
     const box = await sheet.boundingBox()
     expect((box?.y ?? 0) + (box?.height ?? 0)).toBeGreaterThan((viewport?.height ?? 0) - 4)
   })
+  test('never scrolls sideways on any screen', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'iphone', 'Mobile-only layout')
+
+    await completeOnboarding(page)
+    await logMinutes(page, 30)
+
+    /**
+     * A phone screen moves in one direction: down. Anything wider than the
+     * viewport makes the whole layout pan, which is what forces a reader to
+     * hunt for content that was on screen a moment ago.
+     */
+    const expectVertical = async (where: string): Promise<void> => {
+      const page_ = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+      }))
+      expect(page_.scrollWidth, `${where} scrolls sideways`).toBeLessThanOrEqual(page_.clientWidth)
+      expect(await sidewaysOverflow(page), `${where} has content past the edge`).toEqual([])
+    }
+
+    await expectVertical('Home')
+
+    await page.getByRole('link', { name: 'Timeline' }).first().click()
+    await expect(page.getByRole('tab', { name: 'Changes' })).toBeVisible()
+    await expectVertical('Timeline')
+    await page.getByRole('tab', { name: 'Changes' }).click()
+    await expectVertical('Changes')
+
+    await page.getByRole('link', { name: 'Data' }).first().click()
+    await expect(page.getByRole('heading', { name: 'Data' })).toBeVisible()
+    await expectVertical('Data')
+  })
+
+  test('scrolls the heatmap sideways but never vertically', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'iphone', 'Mobile-only layout')
+
+    await completeOnboarding(page)
+    await logMinutes(page, 30)
+
+    // Walk up from a day to whatever container actually scrolls it.
+    const axes = await dayCell(page, '30 min').evaluate((cell) => {
+      let node = cell.parentElement
+      while (node && getComputedStyle(node).overflowX !== 'auto') node = node.parentElement
+      if (!node) throw new Error('the heatmap has no horizontal scroller')
+      return {
+        scrollWidth: node.scrollWidth,
+        clientWidth: node.clientWidth,
+        scrollHeight: node.scrollHeight,
+        clientHeight: node.clientHeight,
+      }
+    })
+
+    // Weeks genuinely do not fit across a phone, so this strip scrolls.
+    expect(axes.scrollWidth).toBeGreaterThan(axes.clientWidth)
+    // Seven weekday rows always fit, so any vertical scroll here is a bug.
+    expect(axes.scrollHeight).toBeLessThanOrEqual(axes.clientHeight)
+  })
+
+  test('sizes every control so the browser never zooms in on focus', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'iphone', 'Mobile-only layout')
+
+    await completeOnboarding(page)
+    await page.getByRole('button', { name: /Log practice/i }).first().click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+
+    // iOS Safari zooms the page when a focused control's text is under 16px,
+    // and does not zoom back out — every control has to clear the threshold.
+    const sizes = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('input, select, textarea')).map((el) => ({
+        id: el.id || el.getAttribute('aria-label') || el.tagName,
+        size: parseFloat(getComputedStyle(el).fontSize),
+      })),
+    )
+    expect(sizes.length).toBeGreaterThan(0)
+    expect(sizes.filter((control) => control.size < 16)).toEqual([])
+  })
+
+  test('keeps an opened help tip on screen', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'iphone', 'Mobile-only layout')
+
+    await completeOnboarding(page)
+    await page.getByRole('button', { name: /Violin practice/ }).click()
+    await page.getByRole('button', { name: 'Add habit' }).click()
+
+    const tip = page.getByRole('button', { name: /What .* means/ }).first()
+    await tip.scrollIntoViewIfNeeded()
+    await tip.click()
+
+    const dialog = page.getByRole('dialog')
+    const panel = dialog.getByRole('note')
+    await expect(panel).toBeVisible()
+
+    const box = await panel.boundingBox()
+    const width = page.viewportSize()?.width ?? 0
+    expect(box?.x ?? -1).toBeGreaterThanOrEqual(0)
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(width)
+
+    // And it did not push the sheet itself into scrolling sideways.
+    const sheet = await dialog.evaluate((el) => ({
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth,
+    }))
+    expect(sheet.scrollWidth).toBeLessThanOrEqual(sheet.clientWidth)
+  })
+
+  test('gives every target on Home at least 24px', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'iphone', 'Mobile-only layout')
+
+    await completeOnboarding(page)
+    await logMinutes(page, 30)
+
+    const small = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('button, a, select'))
+        .filter((el) => !el.hasAttribute('disabled'))
+        .map((el) => {
+          const box = el.getBoundingClientRect()
+          // A heatmap square is deliberately small; its target is widened into
+          // the surrounding gap by a pseudo-element the box model cannot see.
+          const grown = el.hasAttribute('data-heat-date') ? 4 : 0
+          return {
+            label: (el.textContent ?? '').trim().slice(0, 20) || el.getAttribute('aria-label'),
+            width: box.width + grown,
+            height: box.height + grown,
+          }
+        })
+        .filter((el) => el.width > 0 && (el.width < 24 || el.height < 24)),
+    )
+    expect(small).toEqual([])
+  })
 })
+

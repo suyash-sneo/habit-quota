@@ -214,7 +214,9 @@ export function Heatmap({
       </div>
 
       <p className={styles.rangeNote}>
-        Last {weekCount} weeks · scroll for older weeks · arrow keys move between days
+        Last {weekCount} weeks · <span className={styles.touchOnly}>swipe</span>
+        <span className={styles.pointerOnly}>scroll</span> for older weeks
+        <span className={styles.pointerOnly}> · arrow keys move between days</span>
       </p>
     </section>
   )

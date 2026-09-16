@@ -133,7 +133,7 @@
 .tableHead {
   padding: 0 0 9px;
   border-bottom: 1px solid var(--bd);
-  font-size: 11px;
+  font-size: var(--fsMicro);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink3);

@@ -11,7 +11,7 @@
 }
 
 .pageLabel {
-  font-size: 11px;
+  font-size: var(--fsMicro);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--ink3);
@@ -253,7 +253,7 @@
 }
 
 .technical {
-  font-size: 11.5px;
+  font-size: var(--fsMicro);
   color: var(--ink3);
   font-family: var(--mono);
   margin-top: 10px;

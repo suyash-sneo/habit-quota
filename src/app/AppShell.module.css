@@ -111,7 +111,7 @@
 }
 
 .barLabel {
-  font-size: 11.5px;
+  font-size: var(--fsMicro);
   font-weight: 500;
 }
 

@@ -32,7 +32,7 @@
 }
 
 .eyebrow {
-  font-size: 11px;
+  font-size: var(--fsMicro);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink3);
@@ -142,21 +142,26 @@ textarea.field {
 
 .fieldLabel {
   display: block;
-  font-size: 11px;
+  font-size: var(--fsMicro);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink3);
   margin-bottom: 6px;
 }
 
-/* Keeps a help tip on the same line as the label it explains. */
+/*
+ * A label that carries a help tip. The label goes inline so the tip's trigger
+ * flows after its last word and wraps with the text, rather than being a flex
+ * item that gets pushed onto a line of its own when the label is long. The
+ * opened panel is a block, so it takes the full width underneath.
+ */
 .labelRow {
-  display: flex;
-  align-items: center;
+  display: block;
   margin-bottom: 6px;
 }
 
 .labelRow .fieldLabel {
+  display: inline;
   margin-bottom: 0;
 }
 
@@ -210,7 +215,7 @@ textarea.field {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: var(--fsMicro);
   line-height: 1;
 }
 
@@ -219,4 +224,24 @@ textarea.field {
   margin-top: 6px;
   font-size: 12.5px;
   color: var(--crimInk);
+}
+
+/*
+ * Touch input.
+ *
+ * iOS Safari zooms the whole page in whenever a focused control's text is
+ * smaller than 16px, and does not zoom back out afterwards — which is how a
+ * layout that fits perfectly ends up needing to be panned around. Sizing every
+ * control at 16px removes the cause. Suppressing the symptom with
+ * `user-scalable=no` is the wrong trade: it would take away the zoom people
+ * legitimately need, and iOS ignores it anyway.
+ */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea,
+  .field,
+  textarea.field {
+    font-size: 16px;
+  }
 }

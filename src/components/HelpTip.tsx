@@ -5,6 +5,10 @@
  * gets it unconditionally: the text stays in the accessibility tree even when
  * collapsed, so the field it describes always has a real description rather
  * than a hover-only hint that never reaches a touch screen.
+ *
+ * Expects to be rendered inside a `.labelRow`: the wrapper is
+ * `display: contents`, so the trigger flows after the label's text and the
+ * opened panel takes a line of its own. See the note in `HelpTip.module.css`.
  */
 
 import { useEffect, useRef, useState } from 'react'

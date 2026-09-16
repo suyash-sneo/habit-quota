@@ -25,7 +25,14 @@
   width: var(--sheetW);
   max-width: 100%;
   max-height: var(--sheetMax);
+  /*
+   * A sheet is a vertical column and nothing else. `overflow-y: auto` alone
+   * silently turns the x-axis into `auto` too, so one over-wide child is enough
+   * to make the whole form pan sideways under the thumb. Naming the x-axis
+   * keeps that structural, rather than something each new field has to avoid.
+   */
   overflow-y: auto;
+  overflow-x: hidden;
   overscroll-behavior: contain;
   border-radius: var(--sheetR);
   border: 1px solid var(--bd2);

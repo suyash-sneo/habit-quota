@@ -177,6 +177,23 @@ code. Screens compose the two.
 | Styling | CSS Modules plus global design tokens |
 | Tests | Vitest, Testing Library, fake-indexeddb, Playwright, axe-core |
 
+### On a phone
+
+Three rules, each enforced by a test rather than left to care:
+
+1. **One scroll direction.** The page moves down and only down. No screen is
+   wider than the viewport, so the layout never has to be panned to find
+   something that was visible a moment ago.
+2. **One exception, on one axis.** The heatmap's week strip scrolls sideways,
+   because a season of weeks genuinely does not fit across a phone. It does not
+   scroll vertically — seven weekday rows always fit — and the Backup history
+   table is the same deal.
+3. **Zoom is never required.** Pinch-zoom stays enabled, because taking it away
+   is taking away something people need. But nothing depends on it: no text
+   below 12px, no target below 24px, and every form control at 16px — under
+   that, iOS Safari zooms the page on focus and does not zoom back out, which is
+   the usual reason a layout that fits ends up needing to be panned.
+
 The visual design comes from the Claude Design source, and the tokens in
 `src/styles/tokens.css` are taken from it verbatim. A test recomputes every
 foreground/background pair's contrast ratio from that file, so a future colour
@@ -195,7 +212,8 @@ The end-to-end suite runs against a real production build served under
 `/habit-quota/`, and covers onboarding, logging, editing with its consequence
 preview, delete-and-undo, goals, export → fresh device → import → idempotent
 re-import, offline launch, hash-route refresh, the manifest and icons, the CSP,
-and that no request ever leaves the app's own origin.
+and that no request ever leaves the app's own origin. On the iPhone viewport it
+also asserts the three rules above, screen by screen.
 
 Some things only a person can check — see
 [`docs/testing.md`](docs/testing.md) for the iPhone acceptance checklist.

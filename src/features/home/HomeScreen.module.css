@@ -68,7 +68,9 @@
 }
 
 .metricSuffix {
-  font-size: 0.42em;
+  /* Relative to a metric that shrinks on mobile, so it needs the same floor
+     the rest of the small type has. */
+  font-size: max(0.42em, var(--fsMicro));
   font-family: var(--sans);
   font-weight: 500;
   color: var(--ink2);
@@ -82,7 +84,7 @@
 }
 
 .eyebrowLabel {
-  font-size: 11px;
+  font-size: var(--fsMicro);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink3);
@@ -343,7 +345,7 @@
 }
 
 .dotLabel {
-  font-size: 11px;
+  font-size: var(--fsMicro);
   color: var(--ink3);
 }
 

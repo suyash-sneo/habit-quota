@@ -29,6 +29,8 @@ Asserted directly, because they are the ones that would silently lose data:
 - A failed write consumes no device sequence and leaves no partial projection.
 - A failed import leaves the database logically unchanged.
 - A private habit's real name never appears in any stored event.
+- No screen scrolls sideways on a phone, and the heatmap scrolls on one axis.
+- Every form control is at least 16px, so iOS Safari never zooms on focus.
 
 ## Known limits of the automated suite
 
@@ -52,14 +54,21 @@ Run on real hardware before a release. Nothing here is automatable.
 - [ ] The bottom bar clears the home indicator, and the content clears the notch.
 - [ ] Log an entry; today's figure, the heatmap cell, the streak, the week total
       and the goal all update at once.
-- [ ] The heatmap scrolls horizontally and starts at the newest weeks.
+- [ ] The heatmap scrolls horizontally, starts at the newest weeks, and does
+      not scroll vertically.
 - [ ] Day cells are comfortably tappable despite the small squares.
 - [ ] Sheets open from the bottom and dismiss on tapping the scrim.
 - [ ] The keyboard does not cover the field being typed into.
 - [ ] Force-quit and reopen; the data is still there.
 - [ ] Open the log sheet: the whole form, including Save, clears the browser's
       bottom toolbar, and the "minutes" label sits beside its input.
-- [ ] Tap the "?" beside a streak field; the explanation opens and dismisses.
+- [ ] Tap the "?" beside a streak field; the explanation opens below the label,
+      fully on screen, and dismisses.
+- [ ] Tap into every text field in turn: the page never zooms, so it never has
+      to be pinched back out afterwards.
+- [ ] Swipe left and right anywhere except the heatmap: nothing moves.
+- [ ] Tap days along the top and bottom edges of the heatmap; the day that
+      opens is the one under the finger.
 - [ ] Data → Start over deletes everything and lands on onboarding.
 - [ ] Enable Airplane Mode and relaunch; the app opens and logging still works.
 - [ ] Export a backup through the Files picker to iCloud Drive.

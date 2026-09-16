@@ -43,6 +43,14 @@
 
   --selCol: rgba(255, 255, 255, 0.05);
 
+  /*
+   * The smallest type in the design: uppercase eyebrows, heatmap axis labels,
+   * week tabs. At a laptop's viewing distance 11px is legible; held at arm's
+   * length on a phone it is not, and small type is the commonest reason to
+   * pinch-zoom a page that otherwise fits. It steps up on touch layouts.
+   */
+  --fsMicro: 11px;
+
   /* Responsive layout switches. */
   --rail: flex;
   --bar: none;
@@ -118,7 +126,11 @@
     --bar: flex;
     --pad: 20px;
     --barPad: 96px;
-    --cell: 22px;
+    --fsMicro: 12px;
+    /* 24px squares with 4px between them give every day a 28px target with no
+       overlap, which clears the 24px minimum without faking a hit area that
+       spills over its neighbour — or out of the scroller. */
+    --cell: 24px;
     --hgap: 4px;
     --h1: 34px;
     --h1s: 26px;

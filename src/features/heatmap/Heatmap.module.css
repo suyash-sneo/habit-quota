@@ -21,7 +21,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: var(--fsMicro);
   color: var(--ink3);
   font-family: var(--mono);
 }
@@ -40,9 +40,18 @@
   border: 1px solid var(--bd);
 }
 
+/*
+ * The weeks strip is the one place in the app that scrolls sideways: a season
+ * of weeks cannot fit across a phone. It scrolls on that axis only — the seven
+ * weekday rows always fit, so any vertical scroll here would be an accident.
+ *
+ * `overflow-y: visible` does not mean visible next to a scrolling x-axis: CSS
+ * computes it to `auto`, which is how a stray 6px of overflow turned this into
+ * a two-axis scroller. Saying `hidden` is the only way to mean it.
+ */
 .scroller {
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: hidden;
   padding-bottom: 6px;
   margin-bottom: 2px;
   overscroll-behavior-x: contain;
@@ -67,14 +76,14 @@
 }
 
 .dayLabelSpacer {
-  height: 20px;
+  height: 24px;
 }
 
 .dayLabel {
   height: var(--cell);
   display: flex;
   align-items: center;
-  font-size: 11px;
+  font-size: var(--fsMicro);
   color: var(--ink3);
   width: 30px;
 }
@@ -96,10 +105,10 @@
 }
 
 .weekTab {
-  height: 20px;
+  min-height: 24px;
   padding: 0 5px;
   border-radius: 4px;
-  font-size: 10.5px;
+  font-size: var(--fsMicro);
   font-family: var(--mono);
   letter-spacing: 0.02em;
   color: var(--ink3);
@@ -130,11 +139,16 @@
   background: var(--g0);
 }
 
-/* A 44px-ish invisible hit area over a deliberately small square. */
+/*
+ * Widen the target into the surrounding gap, but no further. At -9px the hit
+ * areas of vertically adjacent days overlapped, so a tap near a boundary
+ * landed on the wrong date and the bottom row spilled out of the scroller.
+ * Half the gap each way is the most that can be claimed without either.
+ */
 .cell::after {
   content: '';
   position: absolute;
-  inset: -9px;
+  inset: calc(var(--hgap) / -2);
 }
 
 .cell:hover:not(:disabled) {
@@ -190,4 +204,22 @@
   font-size: 12px;
   color: var(--ink3);
   font-family: var(--mono);
+}
+
+/*
+ * The same instruction in the reader's own terms: a phone is swiped, and it has
+ * no arrow keys to be told about.
+ */
+.touchOnly {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .touchOnly {
+    display: inline;
+  }
+
+  .pointerOnly {
+    display: none;
+  }
 }

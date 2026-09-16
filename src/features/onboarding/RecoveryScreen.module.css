@@ -78,7 +78,7 @@
 }
 
 .destructiveTitle {
-  font-size: 11px;
+  font-size: var(--fsMicro);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink3);
