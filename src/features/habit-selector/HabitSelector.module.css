@@ -285,3 +285,34 @@
   flex: 1;
   min-width: 120px;
 }
+
+/*
+ * On a phone every field owns the full width of the form.
+ *
+ * This is not just a taste about roomy layouts. Native date and time controls
+ * have an intrinsic minimum width that CSS cannot shrink — `width: 100%` does
+ * not apply below it — and that minimum depends on the platform and on the
+ * locale's date format. A two-column row at 168px each is narrower than iOS
+ * renders "Sep 14, 2026", so the control overflowed its column and the field
+ * beside it was pushed off the edge of the sheet.
+ *
+ * Headless WebKit draws those inputs as ordinary text boxes, so no test here
+ * can measure the real width. The layout therefore must not depend on it: a
+ * full-width field fits whatever the platform decides to draw.
+ *
+ * 560px rather than the app's usual 920px breakpoint, because this is about
+ * how much room a field has, and a sheet is never wider than 560px.
+ */
+@media (max-width: 560px) {
+  .row {
+    display: block;
+  }
+
+  .col {
+    min-width: 0;
+  }
+
+  .col + .col {
+    margin-top: 14px;
+  }
+}

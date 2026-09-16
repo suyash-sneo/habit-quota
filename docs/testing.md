@@ -40,6 +40,11 @@ Asserted directly, because they are the ones that would silently lose data:
 - **Offline reload** is only driven in Chromium. Playwright's WebKit build errors
   out reloading a page under offline emulation, so iOS offline behaviour is on the
   manual checklist below.
+- **Native date and time controls** are drawn by the platform, and headless
+  WebKit draws them as ordinary text boxes. Their real width on iOS depends on
+  the locale's date format and cannot be measured here, so the layout is built
+  not to depend on it: below 560px every field takes the full width of its form.
+  The tests assert that arrangement rather than the resulting pixels.
 - **The File System Access picker** opens a native dialog no automated run can
   drive. The end-to-end test exercises the download fallback — the path iOS Safari
   and Firefox take — and the picker is checked by hand on desktop Chrome.
@@ -62,6 +67,8 @@ Run on real hardware before a release. Nothing here is automatable.
 - [ ] Force-quit and reopen; the data is still there.
 - [ ] Open the log sheet: the whole form, including Save, clears the browser's
       bottom toolbar, and the "minutes" label sits beside its input.
+- [ ] On a negative habit, open the log sheet: the date and the time each have
+      a full-width line and neither is cut off at the right edge.
 - [ ] Tap the "?" beside a streak field; the explanation opens below the label,
       fully on screen, and dismisses.
 - [ ] Tap into every text field in turn: the page never zooms, so it never has

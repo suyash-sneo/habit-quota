@@ -66,6 +66,28 @@ async function sidewaysOverflow(page: Page): Promise<string[]> {
   })
 }
 
+
+/**
+ * Nothing inside a sheet may reach past its own edge. A sheet clips rather than
+ * pans, so an over-wide field is invisible rather than merely awkward — the
+ * measurement has to be made rather than looked at.
+ */
+async function expectSheetFits(page: Page, name: string): Promise<void> {
+  const report = await page.getByRole('dialog').evaluate((sheet) => {
+    const limit = sheet.getBoundingClientRect().right
+    const past: string[] = []
+    for (const node of Array.from(sheet.querySelectorAll('*'))) {
+      const box = node.getBoundingClientRect()
+      if (box.width === 0 && box.height === 0) continue
+      if (box.right <= limit + 0.5) continue
+      past.push(`<${node.tagName.toLowerCase()}${node.id ? ` id="${node.id}"` : ''}> right=${Math.round(box.right)} of ${Math.round(limit)}`)
+    }
+    return { overflow: sheet.scrollWidth - sheet.clientWidth, past }
+  })
+  expect(report.overflow, `${name} scrolls sideways`).toBeLessThanOrEqual(0)
+  expect(report.past, `${name} has content past its edge`).toEqual([])
+}
+
 test.describe('first run and daily use', () => {
   test('onboards, logs, and shows progress', async ({ page }) => {
     await completeOnboarding(page)
@@ -625,5 +647,90 @@ test.describe('mobile layout', () => {
     )
     expect(small).toEqual([])
   })
+
+  test('fits every sheet on the screen, down to the narrowest phone', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'iphone', 'Mobile-only layout')
+
+    await completeOnboarding(page)
+    await logMinutes(page, 30)
+
+    /** Each sheet, and how to get to it from Home. */
+    const sheets: { name: string; open: () => Promise<void> }[] = [
+      {
+        name: 'Log practice',
+        open: async () => {
+          await page.getByRole('button', { name: /Log practice/i }).first().click()
+        },
+      },
+      {
+        name: 'Choose habit',
+        open: async () => {
+          await page.getByRole('button', { name: /Violin practice/ }).click()
+        },
+      },
+      {
+        name: 'Add habit',
+        open: async () => {
+          await page.getByRole('button', { name: /Violin practice/ }).click()
+          await page.getByRole('button', { name: 'Add habit' }).click()
+        },
+      },
+      {
+        name: 'Manage habits',
+        open: async () => {
+          await page.getByRole('button', { name: /Violin practice/ }).click()
+          await page.getByRole('button', { name: 'Manage habits' }).click()
+        },
+      },
+      {
+        name: 'Add a goal',
+        open: async () => {
+          await page.getByRole('button', { name: /Add a goal/i }).first().click()
+        },
+      },
+    ]
+
+    // 320px is the narrowest phone still in use. Passing there leaves headroom
+    // at 390 for a native control that renders wider than this engine draws it.
+    for (const width of [390, 320]) {
+      await page.setViewportSize({ width, height: 700 })
+      for (const sheet of sheets) {
+        await sheet.open()
+        await expect(page.getByRole('dialog')).toBeVisible()
+        await expectSheetFits(page, `${sheet.name} at ${width}px`)
+        await page.keyboard.press('Escape')
+        await expect(page.getByRole('dialog')).toBeHidden()
+      }
+    }
+  })
+
+  test('fits a negative habit\'s log sheet, where the date sits beside a time', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'iphone', 'Mobile-only layout')
+
+    await page.goto('./')
+    await page.getByLabel('Display name').fill('Mb')
+    await page.getByRole('radio', { name: /Negative occurrence/i }).click()
+    await page.getByRole('button', { name: 'Start tracking' }).click()
+
+    for (const width of [390, 320]) {
+      await page.setViewportSize({ width, height: 700 })
+      await page.getByRole('button', { name: /Log event/i }).first().click()
+      const dialog = page.getByRole('dialog')
+      await expect(dialog).toBeVisible()
+      await expectSheetFits(page, `Log event at ${width}px`)
+
+      // The date and the time each get a line of their own, so neither depends
+      // on how wide the platform decides to draw a native picker.
+      const date = await dialog.locator('#entry-date').boundingBox()
+      const time = await dialog.locator('#entry-time').boundingBox()
+      expect(date?.y ?? 0, 'the date and time share a line').not.toEqual(time?.y ?? 0)
+
+      await page.keyboard.press('Escape')
+      await expect(dialog).toBeHidden()
+    }
+  })
 })
+
 
