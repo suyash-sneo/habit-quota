@@ -1,0 +1,90 @@
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  display: flex;
+  justify-content: center;
+  padding: calc(40px + env(safe-area-inset-top, 0px)) 20px
+    calc(40px + env(safe-area-inset-bottom, 0px));
+}
+
+.panel {
+  width: 100%;
+  max-width: 560px;
+}
+
+.title {
+  font-family: var(--serif);
+  font-size: var(--h1s);
+  font-weight: 500;
+  margin: 0;
+}
+
+.body {
+  font-size: 14.5px;
+  color: var(--ink2);
+  margin: 12px 0 0;
+  max-width: 56ch;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.actions > * {
+  flex: 1;
+  min-width: 180px;
+}
+
+.status {
+  margin-top: 14px;
+  font-size: 13.5px;
+  color: var(--ink2);
+}
+
+.details {
+  margin-top: 26px;
+  font-size: 13px;
+  color: var(--ink2);
+}
+
+.details summary {
+  cursor: pointer;
+}
+
+.code {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink3);
+  overflow-wrap: anywhere;
+  margin: 8px 0 0;
+}
+
+.note {
+  font-size: 12.5px;
+  color: var(--ink3);
+  margin: 8px 0 0;
+  max-width: 56ch;
+}
+
+.destructive {
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px solid var(--bd);
+}
+
+.destructiveTitle {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin: 0 0 8px;
+}
+
+.destructive button {
+  margin-top: 14px;
+}

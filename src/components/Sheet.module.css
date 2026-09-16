@@ -1,0 +1,72 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: var(--sheetAlign);
+  justify-content: center;
+  background: rgba(6, 8, 7, 0.62);
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+}
+
+.sheet {
+  position: relative;
+  width: var(--sheetW);
+  max-width: 100%;
+  max-height: var(--sheetMax);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--sheetR);
+  border: 1px solid var(--bd2);
+  background: var(--surf);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--bd);
+  position: sticky;
+  top: 0;
+  background: var(--surf);
+  z-index: 2;
+}
+
+.title {
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.spacer {
+  flex: 1;
+  min-width: 4px;
+}
+
+.close {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: var(--ink2);
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close:hover {
+  background: var(--surf2);
+  color: var(--ink);
+}
+
+.body {
+  padding: 20px;
+}

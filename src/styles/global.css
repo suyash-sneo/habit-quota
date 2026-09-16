@@ -1,0 +1,211 @@
+@import './fonts.css';
+@import './tokens.css';
+@import './reset.css';
+
+/* Shared primitives used across features. All colours come from tokens.css. */
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+.serif {
+  font-family: var(--serif);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+.card {
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  background: var(--surf);
+  padding: 20px;
+  min-width: 0;
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 20px;
+  min-height: 44px;
+  border-radius: 9px;
+  background: var(--grn);
+  color: var(--onGrn);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.5;
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  min-height: 44px;
+  border-radius: 9px;
+  border: 1px solid var(--bd2);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background: var(--surf2);
+}
+
+.btnSecondary:disabled {
+  opacity: 0.5;
+}
+
+.btnDanger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  min-height: 44px;
+  border-radius: 9px;
+  border: 1px solid var(--crimBd);
+  color: var(--crimInk);
+  font-weight: 600;
+}
+
+.btnDanger:hover:not(:disabled) {
+  background: var(--crimSoft);
+}
+
+.btnQuiet {
+  padding: 7px 9px;
+  border-radius: 7px;
+  min-height: 36px;
+  font-size: 12.5px;
+  color: var(--ink3);
+}
+
+.btnQuiet:hover:not(:disabled) {
+  background: var(--surf2);
+  color: var(--ink);
+}
+
+.field {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 13px;
+  border-radius: 9px;
+  border: 1px solid var(--bd2);
+  background: var(--surf2);
+  font-size: 15px;
+}
+
+.field:disabled {
+  opacity: 0.6;
+}
+
+textarea.field {
+  padding: 11px 13px;
+  font-size: 14.5px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 6px;
+}
+
+.fieldReadonly {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 13px;
+  border-radius: 9px;
+  border: 1px solid var(--bd);
+  background: var(--surf2);
+  font-size: 15px;
+  color: var(--ink2);
+}
+
+.noticeGood,
+.noticeWarn,
+.noticeBad {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  font-size: 13.5px;
+}
+
+.noticeGood {
+  border: 1px solid var(--grnBd);
+  background: var(--grnSoft);
+  color: var(--grnInk);
+}
+
+.noticeWarn {
+  border: 1px solid var(--amb);
+  background: var(--ambSoft);
+  color: var(--ambInk);
+}
+
+.noticeBad {
+  border: 1px solid var(--crimBd);
+  background: var(--crimSoft);
+  color: var(--crimInk);
+}
+
+.badge {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.errorText {
+  display: block;
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--crimInk);
+}

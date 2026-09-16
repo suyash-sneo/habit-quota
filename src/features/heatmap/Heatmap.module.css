@@ -1,0 +1,189 @@
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.title {
+  font-family: var(--serif);
+  font-size: 23px;
+  font-weight: 500;
+}
+
+.spacer {
+  flex: 1;
+  min-width: 4px;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--ink3);
+  font-family: var(--mono);
+}
+
+.legendStop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.legendSwatch {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  border: 1px solid var(--bd);
+}
+
+.scroller {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 6px;
+  margin-bottom: 2px;
+  overscroll-behavior-x: contain;
+}
+
+.grid {
+  display: flex;
+  gap: var(--hgap);
+  min-width: max-content;
+}
+
+/* Stays put while the weeks scroll, so the weekday axis is never lost. */
+.dayLabels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hgap);
+  padding-right: 6px;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--surf);
+}
+
+.dayLabelSpacer {
+  height: 20px;
+}
+
+.dayLabel {
+  height: var(--cell);
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: var(--ink3);
+  width: 30px;
+}
+
+.week {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hgap);
+  border-radius: 5px;
+  background: transparent;
+}
+
+.weekSelected {
+  background: var(--selCol);
+}
+
+.weekTab {
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-family: var(--mono);
+  letter-spacing: 0.02em;
+  color: var(--ink3);
+  background: transparent;
+}
+
+.weekTab:hover {
+  color: var(--ink);
+}
+
+.weekTabSelected {
+  background: var(--grn);
+  color: var(--onGrn);
+}
+
+.cellWrap {
+  position: relative;
+  width: var(--cell);
+  height: var(--cell);
+}
+
+.cell {
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+  border: 1.5px solid transparent;
+  position: relative;
+  background: var(--g0);
+}
+
+/* A 44px-ish invisible hit area over a deliberately small square. */
+.cell::after {
+  content: '';
+  position: absolute;
+  inset: -9px;
+}
+
+.cell:hover:not(:disabled) {
+  border-color: var(--ink3);
+}
+
+.cellSelected {
+  border-color: var(--ink);
+}
+
+.cellFuture {
+  background: transparent;
+  border-color: var(--bd);
+  opacity: 0.45;
+}
+
+.b0 {
+  background: var(--g0);
+}
+.b1 {
+  background: var(--g1);
+}
+.b2 {
+  background: var(--g2);
+}
+.b3 {
+  background: var(--g3);
+}
+.b4 {
+  background: var(--g4);
+}
+.b5 {
+  background: var(--g5);
+}
+.bneg {
+  background: var(--crim);
+}
+
+/* Conflicts are never signalled by colour alone. */
+.conflict::before {
+  content: '';
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amb);
+  border: 1px solid var(--surf);
+}
+
+.rangeNote {
+  font-size: 12px;
+  color: var(--ink3);
+  font-family: var(--mono);
+}

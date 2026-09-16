@@ -1,0 +1,66 @@
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  display: flex;
+  justify-content: center;
+  padding: calc(32px + env(safe-area-inset-top, 0px)) 20px
+    calc(40px + env(safe-area-inset-bottom, 0px));
+}
+
+.panel {
+  width: 100%;
+  max-width: 620px;
+}
+
+.title {
+  font-family: var(--serif);
+  font-size: var(--h1);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.title:focus {
+  outline: none;
+}
+
+.lede {
+  font-size: 14.5px;
+  color: var(--ink2);
+  margin: 10px 0 0;
+  max-width: 54ch;
+}
+
+.section {
+  margin-top: 30px;
+  padding-top: 24px;
+  border-top: 1px solid var(--bd);
+}
+
+.sectionTitle {
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 500;
+  margin: 0 0 6px;
+}
+
+.sectionHint {
+  font-size: 13.5px;
+  color: var(--ink2);
+  margin: 0 0 14px;
+  max-width: 56ch;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.actions > * {
+  flex: 1;
+  min-width: 180px;
+}

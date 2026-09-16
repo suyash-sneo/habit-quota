@@ -1,0 +1,55 @@
+.toaster {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--barPad) + 14px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 92vw;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--bd2);
+  background: var(--surf3);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+}
+
+.bad {
+  border-color: var(--crimBd);
+  color: var(--crimInk);
+}
+
+.message {
+  font-size: 13.5px;
+}
+
+.action {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--grnInk);
+  padding: 6px 4px;
+  min-height: 32px;
+}
+
+.action:hover {
+  color: var(--ink);
+}
+
+.dismiss {
+  color: var(--ink3);
+  padding: 6px;
+  min-height: 32px;
+}
+
+.dismiss:hover {
+  color: var(--ink);
+}

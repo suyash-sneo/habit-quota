@@ -1,0 +1,271 @@
+.header {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-family: var(--serif);
+  font-size: var(--h1);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 13.5px;
+  color: var(--ink2);
+  margin: 6px 0 0;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: var(--data2);
+  gap: 20px;
+  align-items: start;
+}
+
+.stack {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cardTitle {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0 0 14px;
+}
+
+.deviceName {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.bigCount {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.bigCountValue {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 500;
+}
+
+.factRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 13.5px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.factLabel {
+  color: var(--ink2);
+  min-width: 88px;
+}
+
+.integrityGood {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--grnInk);
+}
+
+.integrityWarn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ambInk);
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+
+.hint {
+  font-size: 12.5px;
+  color: var(--ink3);
+  margin: 12px 0 0;
+}
+
+.buttonRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.buttonRow > * {
+  flex: 1;
+  min-width: 150px;
+  min-height: 46px;
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.table {
+  min-width: max-content;
+}
+
+.tableHead,
+.tableRow {
+  display: grid;
+  grid-template-columns: 116px 96px 150px 84px minmax(160px, 1fr);
+  gap: 12px;
+}
+
+.tableHead {
+  padding: 0 0 9px;
+  border-bottom: 1px solid var(--bd);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+.tableRow {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--bd);
+  font-size: 13px;
+}
+
+.muted {
+  color: var(--ink2);
+}
+
+.pathCell {
+  color: var(--ink3);
+  font-family: var(--mono);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.counts {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  border-top: 1px solid var(--bd);
+  padding-top: 16px;
+}
+
+.count {
+  flex: 1;
+  min-width: 88px;
+}
+
+.countValue {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.countLabel {
+  font-size: 12.5px;
+  color: var(--ink2);
+  margin-top: 5px;
+}
+
+.importEmpty {
+  padding: 22px 4px;
+  text-align: center;
+}
+
+.importEmptyText {
+  font-size: 13.5px;
+  color: var(--ink3);
+  max-width: 320px;
+  margin: 0 auto 16px;
+}
+
+.fileName {
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.mergeRow {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--bd);
+  font-size: 13.5px;
+}
+
+.mergeLabel {
+  color: var(--ink2);
+  flex: 1;
+}
+
+.mergeValue {
+  font-weight: 600;
+}
+
+.exportSummary {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--bd);
+  background: var(--surf2);
+}
+
+.fileNameMono {
+  font-family: var(--mono);
+  font-size: 13.5px;
+  overflow-wrap: anywhere;
+}
+
+.visuallyHiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.conflictQueue {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.conflictItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  border-radius: 9px;
+  border: 1px solid var(--bd);
+  font-size: 13px;
+  width: 100%;
+  text-align: left;
+}
+
+.conflictItem:hover {
+  border-color: var(--bd2);
+  background: var(--surf2);
+}
+
+.conflictResolved {
+  border-color: var(--grnBd);
+  background: var(--grnSoft);
+  color: var(--grnInk);
+}

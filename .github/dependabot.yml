@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # Review the service worker and crypto surface deliberately, together.
+      pwa:
+        patterns:
+          - 'vite-plugin-pwa'
+          - 'workbox-*'
+      dev-tooling:
+        patterns:
+          - '@types/*'
+          - 'eslint*'
+          - 'typescript*'
+          - 'vitest'
+          - '@vitest/*'
+          - '@testing-library/*'
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

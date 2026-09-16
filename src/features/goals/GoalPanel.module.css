@@ -1,0 +1,125 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.heading {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.spacer {
+  flex: 1;
+  min-width: 4px;
+}
+
+.subheading {
+  font-size: 13.5px;
+  color: var(--ink2);
+  margin: 2px 0 0;
+}
+
+.bigRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.big {
+  font-family: var(--serif);
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.bigSuffix {
+  font-size: 15px;
+  color: var(--ink2);
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.track {
+  flex: 1;
+  height: 9px;
+  border-radius: 99px;
+  background: var(--surf3);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: 99px;
+}
+
+.percent {
+  font-size: 12.5px;
+  color: var(--ink2);
+  min-width: 34px;
+  text-align: right;
+}
+
+.status {
+  font-size: 12.5px;
+  color: var(--ink2);
+  margin: 8px 0 0;
+}
+
+.lines {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13.5px;
+  flex-wrap: wrap;
+}
+
+.lineValue {
+  font-weight: 600;
+}
+
+.lineLabel {
+  color: var(--ink2);
+}
+
+.footnote {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--bd);
+  font-size: 12px;
+  color: var(--ink3);
+}
+
+.emptyCard {
+  border: 1px dashed var(--bd2);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.emptyTitle {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.emptyBody {
+  font-size: 13.5px;
+  color: var(--ink2);
+  margin: 6px 0 14px;
+}

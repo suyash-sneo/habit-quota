@@ -1,0 +1,27 @@
+node_modules/
+dist/
+dist-ssr/
+coverage/
+playwright-report/
+test-results/
+.playwright/
+*.local
+
+# Never commit personal data or backups.
+*.habitbak
+habit-backup*.json
+habits-backup*.json
+private-backup*.json
+backup-*.json
+
+.env
+.env.*
+!.env.example
+
+.DS_Store
+*.log
+npm-debug.log*
+.vite/
+.idea/
+.vscode/*
+!.vscode/extensions.json

@@ -1,0 +1,281 @@
+.title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--serif);
+  font-size: var(--h1);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  text-align: left;
+  padding: 2px 0;
+  color: var(--ink);
+  max-width: 100%;
+}
+
+.title:hover {
+  color: var(--grnInk);
+}
+
+.name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 12px;
+  border-radius: 9px;
+  min-height: 60px;
+  background: transparent;
+}
+
+.option:hover {
+  background: var(--surf2);
+}
+
+.optionSelected {
+  background: var(--surf2);
+}
+
+.optionBody {
+  min-width: 0;
+  flex: 1;
+}
+
+.optionName {
+  display: block;
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.optionUnit {
+  display: block;
+  font-size: 12.5px;
+  color: var(--ink2);
+  margin-top: 1px;
+}
+
+.check {
+  color: var(--grnInk);
+  font-size: 15px;
+  width: 18px;
+  text-align: center;
+}
+
+.divider {
+  height: 1px;
+  background: var(--bd);
+  margin: 14px 0;
+}
+
+.quietAction {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 13px 12px;
+  border-radius: 9px;
+  min-height: 48px;
+  font-size: 14px;
+  color: var(--ink2);
+}
+
+.quietAction:hover {
+  background: var(--surf2);
+  color: var(--ink);
+}
+
+.manageRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-top: 1px solid var(--bd);
+}
+
+.iconButton {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  border: 1px solid var(--bd);
+  color: var(--ink2);
+}
+
+.iconButton:hover:not(:disabled) {
+  background: var(--surf2);
+  color: var(--ink);
+}
+
+.iconButton:disabled {
+  opacity: 0.4;
+}
+
+.manageName {
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.manageMeta {
+  font-size: 12.5px;
+  color: var(--ink2);
+}
+
+.archiveButton {
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--bd);
+  font-size: 13px;
+  color: var(--ink2);
+}
+
+.archiveButton:hover {
+  background: var(--surf2);
+}
+
+.footnote {
+  border-top: 1px solid var(--bd);
+  margin-top: 6px;
+  padding-top: 14px;
+  font-size: 12.5px;
+  color: var(--ink3);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 13px;
+  border-radius: 9px;
+  min-height: 52px;
+  width: 100%;
+  border: 1.5px solid var(--bd);
+  background: transparent;
+}
+
+.choiceSelected {
+  border-color: var(--grn);
+  background: var(--grnSoft);
+}
+
+.radio {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid var(--bd2);
+  background: transparent;
+  flex: 0 0 auto;
+}
+
+.choiceSelected .radio {
+  border-color: var(--grn);
+  background: var(--grn);
+}
+
+.choiceLabel {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.choiceHint {
+  display: block;
+  font-size: 12.5px;
+  color: var(--ink2);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  margin-top: 14px;
+  padding: 13px;
+  border-radius: 9px;
+  min-height: 52px;
+  border: 1px solid var(--bd2);
+}
+
+.checkboxBox {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--bd2);
+  color: var(--onGrn);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex: 0 0 auto;
+}
+
+.checkboxBoxOn {
+  border-color: var(--grn);
+  background: var(--grn);
+}
+
+.previewCard {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--bd);
+  background: var(--surf2);
+}
+
+.previewName {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 500;
+}
+
+.previewCells {
+  display: flex;
+  gap: 4px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.previewCell {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid var(--bd);
+  background: var(--g0);
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.col {
+  flex: 1;
+  min-width: 140px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.actionsGrow {
+  flex: 2;
+  min-width: 150px;
+}
+
+.actionsShrink {
+  flex: 1;
+  min-width: 120px;
+}

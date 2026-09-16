@@ -1,0 +1,133 @@
+/*
+ * Design tokens — taken verbatim from the Claude Design source (`Habit Tracker.dc.html`).
+ * Anything visual in the app reads these; no component invents its own colour.
+ */
+
+:root {
+  --sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --bg: #0e110f;
+  --surf: #151915;
+  --surf2: #1c211d;
+  --surf3: #252b26;
+  --bd: #2b322c;
+  --bd2: #3b433c;
+  --ink: #f5f0e6;
+  --ink2: #a4ada5;
+  --ink3: #8d968e;
+
+  --grn: #3f7f57;
+  --grnInk: #8ed3a0;
+  --grnSoft: #18291d;
+  --grnBd: #2c5238;
+  --onGrn: #f2fbf4;
+
+  --crim: #b0524e;
+  --crimInk: #e0938f;
+  --crimSoft: #2a1b1a;
+  --crimBd: #4d2e2c;
+
+  --amb: #c69233;
+  --ambInk: #e2b662;
+  --ambSoft: #2a2214;
+
+  /* Heatmap intensity ramp: g0 = empty, g5 = strongest. */
+  --g0: #232923;
+  --g1: #2d4b35;
+  --g2: #3d7048;
+  --g3: #57945f;
+  --g4: #7dbc86;
+  --g5: #a9dfae;
+
+  --selCol: rgba(255, 255, 255, 0.05);
+
+  /* Responsive layout switches. */
+  --rail: flex;
+  --bar: none;
+  --pad: 40px;
+  --barPad: 40px;
+  --cell: 26px;
+  --hgap: 5px;
+  --h1: 46px;
+  --h1s: 34px;
+  --big: 54px;
+  --homeGrid: minmax(0, 1fr) 340px;
+  --split: minmax(0, 1fr) 380px;
+  --data2: minmax(0, 1fr) minmax(0, 1fr);
+  --sheetAlign: center;
+  --sheetW: 560px;
+  --sheetR: 14px;
+  --sheetMax: 86vh;
+
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --bg: #f5f7f9;
+  --surf: #ffffff;
+  --surf2: #eceff3;
+  --surf3: #e1e6eb;
+  --bd: #d8dee5;
+  --bd2: #c2cbd4;
+  --ink: #131920;
+  --ink2: #525d69;
+  --ink3: #5e6874;
+
+  --grn: #2c7049;
+  --grnInk: #1f5e3b;
+  --grnSoft: #e2f0e7;
+  --grnBd: #b9d9c5;
+  --onGrn: #ffffff;
+
+  --crim: #a83f3b;
+  --crimInk: #92332f;
+  --crimSoft: #f7e6e5;
+  --crimBd: #e3c2c0;
+
+  --amb: #8a6512;
+  --ambInk: #7a5a10;
+  --ambSoft: #f6ecd7;
+
+  --g0: #e5eaef;
+  --g1: #cde9d6;
+  --g2: #a3d3b1;
+  --g3: #71b887;
+  --g4: #45975f;
+  --g5: #276f43;
+
+  --selCol: rgba(0, 0, 0, 0.05);
+
+  color-scheme: light;
+}
+
+@media (max-width: 1180px) {
+  :root {
+    --homeGrid: minmax(0, 1fr);
+    --split: minmax(0, 1fr);
+    --data2: minmax(0, 1fr);
+    --pad: 28px;
+  }
+}
+
+@media (max-width: 920px) {
+  :root {
+    --rail: none;
+    --bar: flex;
+    --pad: 20px;
+    --barPad: 96px;
+    --cell: 22px;
+    --hgap: 4px;
+    --h1: 34px;
+    --h1s: 26px;
+    --big: 42px;
+    --homeGrid: minmax(0, 1fr);
+    --split: minmax(0, 1fr);
+    --data2: minmax(0, 1fr);
+    --sheetAlign: flex-end;
+    --sheetW: 100%;
+    --sheetR: 18px 18px 0 0;
+    --sheetMax: 88vh;
+  }
+}
