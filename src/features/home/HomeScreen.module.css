@@ -92,20 +92,25 @@
 }
 
 @media (max-width: 920px) {
+  /* Four tiles across a phone is three too many. Two columns, two rows, and
+     a real gap between them — the fourth used to wrap back into the first. */
   .metrics {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: end;
-    row-gap: 0;
+    row-gap: 20px;
+    column-gap: 18px;
   }
 
   .metricLead {
     padding-right: 12px;
   }
 
+  /* Vertical rules can't be placed correctly in a wrapped grid — the hidden
+     dividers still count as children — so the gap does the separating. */
   .metric {
-    padding: 0 12px;
-    border-left: 1px solid var(--bd);
+    padding: 0;
+    border-left: none;
   }
 
   .metricDivider {

@@ -117,10 +117,19 @@ test.describe('first run and daily use', () => {
     await expect(dayDetail).toBeVisible()
     await expect(dayDetail.getByText('45 min').first()).toBeVisible()
 
-    const weekSummary = page.getByLabel('Week summary')
-    await expect(weekSummary).toBeVisible()
-    await expect(weekSummary.getByText(/^Week \d+$/)).toBeVisible()
-    await expect(weekSummary.getByText('45 min').first()).toBeVisible()
+    // Picking the week header points the totals panel at that week.
+    await page.getByRole('button', { name: /^Week \d+, / }).last().click()
+
+    const totals = page.getByLabel('Totals and averages')
+    await expect(totals).toBeVisible()
+    await expect(totals.getByRole('tab', { name: 'This week' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    // The navigable week window names its span.
+    await expect(totals.getByText(/^\w+ \d+–\w+ \d+$/)).toBeVisible()
+    await expect(totals.getByText('total practice')).toBeVisible()
+    await expect(totals.getByText('45 min').first()).toBeVisible()
   })
 
   test('moves between heatmap days with the keyboard', async ({ page }) => {

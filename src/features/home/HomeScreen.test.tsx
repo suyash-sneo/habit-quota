@@ -26,13 +26,14 @@ describe('Home screen', () => {
     })
     await renderHome(habitId)
 
-    expect(await screen.findByText('Today')).toBeInTheDocument()
-    expect(screen.getByText('25')).toBeInTheDocument()
-    expect(screen.getByText('Current streak')).toBeInTheDocument()
-    expect(screen.getByText('Longest streak')).toBeInTheDocument()
+    const now = await screen.findByLabelText('Today and streaks')
+    expect(within(now).getByText('Today')).toBeInTheDocument()
+    expect(within(now).getByText('25')).toBeInTheDocument()
+    expect(within(now).getByText('Current streak')).toBeInTheDocument()
+    expect(within(now).getByText('Longest streak')).toBeInTheDocument()
 
     await waitFor(() => {
-      const current = screen.getByText('Current streak').previousElementSibling
+      const current = within(now).getByText('Current streak').previousElementSibling
       expect(current?.textContent).toContain('3')
     })
   })
@@ -136,13 +137,57 @@ describe('Home screen', () => {
     ).toBeInTheDocument()
   })
 
-  it('shows a week summary with totals and averages', async () => {
+  it('summarises the week inside the totals panel', async () => {
     const habitId = await seedHabit({
       days: { [TEST_TODAY]: 25, [YESTERDAY]: 35 },
     })
     await renderHome(habitId)
-    const summary = await screen.findByLabelText('Week summary')
-    expect(within(summary).getByText(/total practice time|sessions/i)).toBeInTheDocument()
+    const panel = await screen.findByLabelText('Totals and averages')
+    await userEvent.click(within(panel).getByRole('tab', { name: 'This week' }))
+
+    const totals = within(panel).getByRole('group', { name: 'Window totals' })
+    // 25 + 35 minutes across the two logged days of the current week.
+    expect(within(totals).getByText('total practice').previousElementSibling).toHaveTextContent(
+      '1h',
+    )
+    expect(within(totals).getByText('per active day').previousElementSibling).toHaveTextContent(
+      '30 min',
+    )
+  })
+
+  it('reports lifetime, yearly and monthly totals with p90', async () => {
+    const habitId = await seedHabit({
+      days: { [TEST_TODAY]: 20, [YESTERDAY]: 60, [TWO_DAYS_AGO]: 40 },
+    })
+    await renderHome(habitId)
+    const panel = await screen.findByLabelText('Totals and averages')
+
+    for (const window of ['Lifetime', 'This year', 'This month', 'Last 30 days']) {
+      await userEvent.click(within(panel).getByRole('tab', { name: window }))
+      expect(within(panel).getByRole('tab', { name: window })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      )
+      const totals = within(panel).getByRole('group', { name: 'Window totals' })
+      // 20 + 60 + 40 minutes.
+      expect(within(totals).getByText('total practice').previousElementSibling).toHaveTextContent(
+        '2h',
+      )
+      expect(within(totals).getByText('p90 day')).toBeInTheDocument()
+      expect(within(totals).getByText('per day')).toBeInTheDocument()
+      expect(within(totals).getByText('per active day')).toBeInTheDocument()
+    }
+  })
+
+  it('steps the totals panel back a week without touching the record', async () => {
+    const habitId = await seedHabit({ days: { [TEST_TODAY]: 25 } })
+    await renderHome(habitId)
+    const panel = await screen.findByLabelText('Totals and averages')
+    await userEvent.click(within(panel).getByRole('tab', { name: 'This week' }))
+    await userEvent.click(within(panel).getByRole('button', { name: 'Previous week' }))
+
+    expect(within(panel).getByText(/Nothing recorded in this window yet/i)).toBeInTheDocument()
+    expect(await listEntriesForHabit(habitId)).toHaveLength(1)
   })
 
   it('logs an entry from Home and reflects it immediately', async () => {

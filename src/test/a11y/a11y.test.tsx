@@ -8,7 +8,7 @@
 
 import { describe, expect, it } from 'vitest'
 import axe from 'axe-core'
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { HomeScreen } from '../../features/home/HomeScreen.tsx'
 import { TimelineScreen } from '../../features/timeline/TimelineScreen.tsx'
@@ -123,12 +123,37 @@ describe('accessibility baseline', () => {
     })
     await screen.findByRole('button', { name: /change habit/i })
 
-    const cells = await screen.findAllByRole('button', { name: /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/ })
+    // Scoped to the heatmap: the totals chart also has day buttons, and they
+    // announce themselves in their own wording.
+    const heatmap = await screen.findByRole('region', { name: /history$/ })
+    const cells = within(heatmap).getAllByRole('button', {
+      name: /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/,
+    })
     expect(cells.length).toBeGreaterThan(0)
     for (const cell of cells.slice(0, 5)) {
       // Never just a date: the value or availability is always announced.
       expect(cell.getAttribute('aria-label')).toMatch(/,\s+(No |[0-9]|future date)/)
     }
+  })
+
+  it('names every column of the totals chart with its span and value', async () => {
+    const habitId = await seedHabit({ days: { [TEST_TODAY]: 25 } })
+    renderWithProviders(<HomeScreen />, {
+      route: `/habit/${habitId}`,
+      path: '/habit/:habitId',
+    })
+    await screen.findByRole('button', { name: /change habit/i })
+
+    const panel = await screen.findByRole('region', { name: 'Totals and averages' })
+    const columns = within(panel).getAllByRole('button', {
+      name: /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/,
+    })
+    expect(columns.length).toBeGreaterThan(0)
+    // A column is never named by its date alone — it always says what is in it.
+    for (const column of columns) {
+      expect(column.getAttribute('aria-label')).toMatch(/: (nothing recorded|.*\d)/)
+    }
+    expect(columns.some((c) => /25 min/.test(c.getAttribute('aria-label') ?? ''))).toBe(true)
   })
 
   it('announces a week header with its range and total', async () => {

@@ -118,3 +118,38 @@ export function datesBetween(start: LocalDate, end: LocalDate): LocalDate[] {
   for (let d = toEpochDay(start); d <= last; d += 1) out.push(fromEpochDay(d))
   return out
 }
+
+/** First day of the month containing `date`. */
+export function startOfMonth(date: LocalDate): LocalDate {
+  const { year, month } = parseLocalDate(date)
+  return toLocalDate({ year, month, day: 1 })
+}
+
+/** Last day of the month containing `date`. */
+export function endOfMonth(date: LocalDate): LocalDate {
+  const { year, month } = parseLocalDate(date)
+  return toLocalDate({ year, month, day: daysInMonth(year, month) })
+}
+
+/** Same day-of-month `count` months on, clamped to the target month's length. */
+export function addMonths(date: LocalDate, count: number): LocalDate {
+  const { year, month, day } = parseLocalDate(date)
+  const zeroBased = year * 12 + (month - 1) + count
+  const targetYear = Math.floor(zeroBased / 12)
+  const targetMonth = zeroBased - targetYear * 12 + 1
+  return toLocalDate({
+    year: targetYear,
+    month: targetMonth,
+    day: Math.min(day, daysInMonth(targetYear, targetMonth)),
+  })
+}
+
+/** January 1st of the year containing `date`. */
+export function startOfYear(date: LocalDate): LocalDate {
+  return toLocalDate({ year: parseLocalDate(date).year, month: 1, day: 1 })
+}
+
+/** December 31st of the year containing `date`. */
+export function endOfYear(date: LocalDate): LocalDate {
+  return toLocalDate({ year: parseLocalDate(date).year, month: 12, day: 31 })
+}

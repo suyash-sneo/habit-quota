@@ -11,6 +11,7 @@ import { useApp } from '../../app/providers.tsx'
 import { useIsNarrow } from '../../app/useMediaQuery.ts'
 import { useHabitData, useHabitList } from '../useHabitData.ts'
 import { HabitSelector } from '../habit-selector/HabitSelector.tsx'
+import { PracticeDashboard } from '../dashboard/PracticeDashboard.tsx'
 import { Heatmap } from '../heatmap/Heatmap.tsx'
 import { EntryEditor } from '../entry-editor/EntryEditor.tsx'
 import { GoalPanel } from '../goals/GoalPanel.tsx'
@@ -18,10 +19,10 @@ import { GoalEditor } from '../goals/GoalEditor.tsx'
 import { ScreenFallback } from '../../components/ScreenFallback.tsx'
 import type { EntryViewRow } from '../../db/schema.ts'
 import { aggregateWeek } from '../../domain/habits/aggregate.ts'
+import type { PeriodKey } from '../../domain/habits/periods.ts'
 import { activeGoalsOn, evaluateGoal } from '../../domain/goals/index.ts'
 import { describeValue, unitLabelFor } from './labels.ts'
 import type { LocalDate } from '../../domain/time/civil.ts'
-import { addDays } from '../../domain/time/civil.ts'
 import {
   formatClock,
   formatLongDate,
@@ -51,6 +52,7 @@ export function HomeScreen(): React.JSX.Element {
   // correct even though `today` only settles once the stored timezone loads.
   const [daySelection, setDaySelection] = useState<DaySelection>({ kind: 'today' })
   const [weekSelection, setWeekSelection] = useState<LocalDate | null>(null)
+  const [periodKey, setPeriodKey] = useState<PeriodKey>('last30')
   const [logging, setLogging] = useState<{ date: LocalDate } | null>(null)
   const [editing, setEditing] = useState<EntryViewRow | null>(null)
   const [goalEditor, setGoalEditor] = useState<{ goalId: string | null } | null>(null)
@@ -67,6 +69,13 @@ export function HomeScreen(): React.JSX.Element {
     setWeekSelection(startOfWeek(date, settings.weekStartsOn))
   }
 
+  // Picking a week anywhere points the dashboard at it, so the panel and the
+  // heatmap never disagree about which week is being read.
+  const selectWeek = (weekStart: LocalDate): void => {
+    setWeekSelection(weekStart)
+    setPeriodKey('week')
+  }
+
   if (!data.loaded || habits === undefined) return <ScreenFallback label="Loading this habit…" />
   const habit = data.habit
   if (!habit) return <ScreenFallback label="That habit is no longer here." />
@@ -74,7 +83,7 @@ export function HomeScreen(): React.JSX.Element {
   const { byDate, entries, goals, streak, negative, isNegative } = data
   const model = habit.trackingModel
   const todayValue = byDate.get(today)?.value ?? 0
-  const week = aggregateWeek(byDate, selectedWeekStart, settings.weekStartsOn, today)
+  const thisWeek = aggregateWeek(byDate, currentWeekStart, settings.weekStartsOn, today)
   const selectedSessions = selectedDate
     ? entries
         .filter((e) => e.occurredLocalDate === selectedDate && !e.deleted)
@@ -98,7 +107,7 @@ export function HomeScreen(): React.JSX.Element {
     const periodic = activeGoalsOn(goals, habit.habitId, today).find(
       (g) => g.goalType === 'periodic-minimum' || g.goalType === 'periodic-maximum',
     )
-    if (!periodic || week.range.start !== currentWeekStart) return null
+    if (!periodic || selectedWeekStart !== currentWeekStart) return null
     const progress = evaluateGoal(periodic, byDate, today)
     if (periodic.goalType === 'periodic-maximum') {
       const over = progress.progress - progress.target
@@ -129,7 +138,21 @@ export function HomeScreen(): React.JSX.Element {
         </button>
       </div>
 
-      <div className={styles.metrics}>
+      <PracticeDashboard
+        byDate={byDate}
+        model={model}
+        today={today}
+        weekStartsOn={settings.weekStartsOn}
+        createdLocalDate={habit.createdLocalDate}
+        periodKey={periodKey}
+        onPeriodChange={setPeriodKey}
+        selectedWeekStart={selectedWeekStart}
+        onSelectWeek={setWeekSelection}
+        onSelectDate={selectDate}
+        weekGoalNote={weekGoalNote}
+      />
+
+      <section className={styles.metrics} aria-label="Today and streaks">
         <div className={styles.metricLead}>
           <div className={styles.bigValue}>
             {isNegative ? (
@@ -164,7 +187,7 @@ export function HomeScreen(): React.JSX.Element {
 
         <div className={styles.metric}>
           <div className={styles.metricValue}>
-            {isNegative ? week.total : streak.current}
+            {isNegative ? thisWeek.total : streak.current}
             <span className={styles.metricSuffix}>
               {isNegative ? 'this week' : streak.current === 1 ? 'day' : 'days'}
             </span>
@@ -185,7 +208,31 @@ export function HomeScreen(): React.JSX.Element {
             {isNegative ? 'Longest interval' : 'Longest streak'}
           </div>
         </div>
-      </div>
+
+        <div className={styles.metricDivider} aria-hidden="true" />
+
+        <div className={styles.metric}>
+          <div className={styles.metricValue}>
+            {model === 'duration'
+              ? formatMinutes(thisWeek.total)
+              : isNegative
+                ? 7 - thisWeek.activeDays
+                : thisWeek.total}
+            {model === 'duration' ? null : (
+              <span className={styles.metricSuffix}>
+                {isNegative
+                  ? 'clear'
+                  : thisWeek.total === 1
+                    ? 'session'
+                    : 'sessions'}
+              </span>
+            )}
+          </div>
+          <div className={styles.metricLabel}>
+            {isNegative ? 'Days clear this week' : 'This week'}
+          </div>
+        </div>
+      </section>
 
       {streakNote ? (
         <p className={styles.note}>
@@ -205,7 +252,7 @@ export function HomeScreen(): React.JSX.Element {
             selectedDate={selectedDate}
             selectedWeekStart={selectedWeekStart}
             onSelectDate={selectDate}
-            onSelectWeek={setWeekSelection}
+            onSelectWeek={selectWeek}
             title={
               isNegative
                 ? 'Event history'
@@ -293,53 +340,6 @@ export function HomeScreen(): React.JSX.Element {
               </button>
             </section>
           ) : null}
-
-          <section className={styles.weekCard} aria-label="Week summary">
-            <div className={styles.weekHead}>
-              <span className="eyebrow">Week summary</span>
-              <div className={styles.grow} />
-              <button
-                type="button"
-                className={styles.weekNav}
-                aria-label="Previous week"
-                onClick={() => setWeekSelection(addDays(selectedWeekStart, -7))}
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                className={styles.weekNav}
-                aria-label="Next week"
-                disabled={selectedWeekStart >= currentWeekStart}
-                onClick={() => {
-                  const next = addDays(selectedWeekStart, 7)
-                  setWeekSelection(next > currentWeekStart ? currentWeekStart : next)
-                }}
-              >
-                ›
-              </button>
-            </div>
-
-            <div className={styles.weekTitleRow}>
-              <span className={styles.weekTitle}>Week {week.range.isoWeek}</span>
-              <span className={`${styles.weekRange} num`}>
-                {formatMonthDay(week.range.start)}–{formatMonthDay(week.range.end)}
-              </span>
-            </div>
-
-            <div className={styles.weekStats}>
-              {weekStats(model, week, isNegative).map((stat) => (
-                <div key={stat.label}>
-                  <div className={styles.weekStatValue} style={stat.tone ? { color: stat.tone } : undefined}>
-                    {stat.value}
-                  </div>
-                  <div className={styles.weekStatLabel}>{stat.label}</div>
-                </div>
-              ))}
-            </div>
-
-            {weekGoalNote ? <p className={styles.weekGoalNote}>{weekGoalNote}</p> : null}
-          </section>
         </div>
 
         <div className={styles.side}>
@@ -442,35 +442,4 @@ function sessionTimeLabel(entry: EntryViewRow, model: string): string {
   return `${formatClock(entry.startTime)} – ${formatClock(end)} · ${
     model === 'duration' ? formatMinutes(entry.value) : pluralize(entry.value, 'session')
   }`
-}
-
-function weekStats(
-  model: string,
-  week: ReturnType<typeof aggregateWeek>,
-  isNegative: boolean,
-): Array<{ value: string; label: string; tone?: string }> {
-  if (isNegative) {
-    return [
-      {
-        value: String(week.total),
-        label: week.total === 1 ? 'event' : 'events',
-        tone: week.total ? 'var(--crimInk)' : undefined,
-      },
-      { value: String(7 - week.activeDays), label: 'clear days' },
-    ]
-  }
-  if (model === 'duration') {
-    return [
-      { value: formatMinutes(week.total), label: 'total practice time' },
-      {
-        value: String(week.activeDays),
-        label: week.activeDays === 1 ? 'practice day' : 'practice days',
-      },
-      { value: `${week.averageOverActiveDays} min`, label: 'daily average' },
-    ]
-  }
-  return [
-    { value: String(week.total), label: week.total === 1 ? 'session' : 'sessions' },
-    { value: String(week.activeDays), label: 'active days' },
-  ]
 }

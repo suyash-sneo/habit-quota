@@ -1,0 +1,386 @@
+.panel {
+  margin-bottom: 22px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* The tab strip scrolls rather than wraps: five windows on a narrow phone
+   would otherwise reflow into two rows and push the numbers below the fold. */
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--bd);
+  border-radius: 9px;
+  background: var(--surf2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  max-width: 100%;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  color: var(--ink2);
+  padding: 7px 11px;
+  min-height: 34px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tabOn {
+  background: var(--surf);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.16);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.stat {
+  min-width: 0;
+}
+
+.statValue {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.statLead {
+  font-size: 34px;
+  color: var(--ink);
+}
+
+.statLabel {
+  font-size: 12.5px;
+  color: var(--ink2);
+  margin-top: 4px;
+}
+
+.statHint {
+  font-size: var(--fsMicro);
+  color: var(--ink3);
+  margin-top: 2px;
+}
+
+/* ------------------------------------------------------------------ chart */
+
+.chart {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+/* Axis ticks are the one place tabular figures earn their keep — they stack. */
+.axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 140px;
+  font-size: var(--fsMicro);
+  color: var(--ink3);
+  text-align: right;
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.plotWrap {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.plot {
+  display: flex;
+  align-items: flex-end;
+  /* The 2px surface gap that separates touching columns. */
+  gap: 2px;
+  position: relative;
+  border-bottom: 1px solid var(--bd2);
+}
+
+.gridTop {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: var(--bd);
+}
+
+.meanLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--bd2);
+  pointer-events: none;
+}
+
+.column {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  /* The whole column height is the hover and hit target, not just the bar. */
+  border-radius: 4px 4px 0 0;
+}
+
+.column:not(:disabled):hover,
+.column:focus-visible {
+  background: var(--selCol);
+}
+
+.column:disabled {
+  cursor: default;
+}
+
+.bar {
+  display: block;
+  width: 100%;
+  max-width: 24px;
+  min-height: 0;
+  /* Rounded at the data end, square where it meets the baseline. */
+  border-radius: 4px 4px 0 0;
+  position: relative;
+}
+
+.positive {
+  background: var(--grn);
+}
+
+.negative {
+  background: var(--crim);
+}
+
+/* A bucket still accruing is drawn lighter; the tooltip also says "so far". */
+.partial {
+  opacity: 0.55;
+}
+
+.barEmpty {
+  background: transparent;
+}
+
+.ticks {
+  display: flex;
+  gap: 2px;
+  margin-top: 6px;
+  /* Labels are wider than the columns they sit under, so each one centres on
+     its column and overflows symmetrically instead of pushing the row wider. */
+  height: 1em;
+}
+
+.tick {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  font-size: var(--fsMicro);
+  color: var(--ink3);
+}
+
+.tickLabel {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.tooltip {
+  position: absolute;
+  top: -6px;
+  left: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 9px;
+  border: 1px solid var(--bd2);
+  border-radius: 7px;
+  background: var(--surf3);
+  pointer-events: none;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.24);
+}
+
+.tooltipValue {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.tooltipWhen {
+  font-size: 12px;
+  color: var(--ink2);
+}
+
+/* The chart's key. It lives below the plot rather than floating inside it,
+   where a label inevitably lands on top of a bar. */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin: 10px 0 0;
+  padding-left: 0;
+  font-size: var(--fsMicro);
+  color: var(--ink3);
+}
+
+.legendLine {
+  width: 14px;
+  height: 1px;
+  background: var(--bd2);
+  flex: 0 0 auto;
+}
+
+.legendSwatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+.legendSwatch[data-tone='positive'] {
+  background: var(--grn);
+}
+
+.legendSwatch[data-tone='negative'] {
+  background: var(--crim);
+}
+
+.legendSep {
+  color: var(--bd2);
+}
+
+.footnote {
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--bd);
+  font-size: 12.5px;
+  color: var(--ink2);
+}
+
+@media (max-width: 920px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 14px;
+  }
+
+  .statValue {
+    font-size: 23px;
+  }
+
+  .statLead {
+    font-size: 28px;
+  }
+
+  .head {
+    gap: 10px;
+  }
+
+  .title {
+    font-size: 17px;
+  }
+
+  /* On a phone the tab strip gets the full width under the heading rather
+     than fighting the title for a few pixels. */
+  .grow {
+    display: none;
+  }
+
+  .tabs {
+    width: 100%;
+    /* The strip scrolls; fade its right edge so it is visibly not the end. */
+    mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent);
+  }
+}
+
+/* ------------------------------------------------------- week navigation */
+
+.weekNavRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.weekNav {
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  border: 1px solid var(--bd);
+  color: var(--ink2);
+  flex: 0 0 auto;
+}
+
+.weekNav:hover:not(:disabled) {
+  background: var(--surf2);
+  color: var(--ink);
+}
+
+.weekNav:disabled {
+  opacity: 0.4;
+}
+
+.weekTitle {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.weekRange {
+  font-size: 12.5px;
+  color: var(--ink2);
+}
+
+.weekToday {
+  font-size: 12.5px;
+  color: var(--grnInk);
+  padding: 8px 4px;
+  min-height: 34px;
+}
+
+.weekToday:hover {
+  color: var(--ink);
+}
+
+.goalNote {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--ink2);
+}
