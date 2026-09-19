@@ -4,6 +4,7 @@ import {
   bucketSeries,
   chooseBucketUnit,
   firstRecordedDate,
+  niceDomain,
   percentile,
   periodRanges,
   periodStats,
@@ -229,5 +230,50 @@ describe('first recorded date', () => {
 
   it('is null when nothing is logged', () => {
     expect(firstRecordedDate(new Map())).toBeNull()
+  })
+})
+
+describe('chart scale', () => {
+  it('frames the data instead of starting at zero', () => {
+    const { lo, hi } = niceDomain([36, 44, 42, 41])
+    expect(lo).toBe(34)
+    expect(hi).toBe(46)
+  })
+
+  it('keeps both extremes off the frame', () => {
+    const values = [36, 44, 42, 41]
+    const { lo, hi } = niceDomain(values)
+    expect(lo).toBeLessThan(Math.min(...values))
+    expect(hi).toBeGreaterThan(Math.max(...values))
+  })
+
+  it('clamps at zero rather than padding into negative values', () => {
+    // Spread 2, pad 1 → would be -1 without the clamp.
+    expect(niceDomain([1, 2, 3]).lo).toBe(0)
+    // A lone small value still gets framed rather than pinned to zero.
+    expect(niceDomain([2])).toMatchObject({ lo: 1, hi: 3 })
+  })
+
+  it('gives a flat series room proportional to itself', () => {
+    const { lo, hi } = niceDomain([60, 60, 60])
+    expect(lo).toBe(54)
+    expect(hi).toBe(66)
+  })
+
+  it('pads a wide spread proportionally', () => {
+    const { lo, hi } = niceDomain([30, 180])
+    expect(lo).toBe(5)
+    expect(hi).toBe(205)
+  })
+
+  it('offers a midpoint tick strictly inside the range', () => {
+    const { lo, hi, ticks } = niceDomain([36, 44])
+    expect(ticks).toHaveLength(3)
+    expect(ticks[1]).toBeGreaterThan(lo)
+    expect(ticks[1]).toBeLessThan(hi)
+  })
+
+  it('is safe for an empty series', () => {
+    expect(niceDomain([])).toEqual({ lo: 0, hi: 1, ticks: [0, 1] })
   })
 })

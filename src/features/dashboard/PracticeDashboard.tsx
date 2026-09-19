@@ -18,6 +18,7 @@ import {
   bucketSeries,
   chooseBucketUnit,
   firstRecordedDate,
+  niceDomain,
   periodRanges,
   periodStats,
 } from '../../domain/habits/periods.ts'
@@ -34,11 +35,14 @@ import {
   pluralize,
 } from '../../domain/time/format.ts'
 import { startOfWeek, weekRange } from '../../domain/time/week.ts'
+import { useElementWidth } from './useElementWidth.ts'
 import styles from './PracticeDashboard.module.css'
 
-/** The chart is 140px tall; a logged day never renders as nothing at all. */
-const PLOT_HEIGHT = 140
-const MIN_VISIBLE_PERCENT = 2
+const PLOT_HEIGHT = 116
+/** Past this many observations the markers crowd, so the line carries alone. */
+const MAX_DOTS = 45
+/** Width assumed before the plot has been measured (and under jsdom). */
+const FALLBACK_PLOT_WIDTH = 560
 
 export interface PracticeDashboardProps {
   byDate: ReadonlyMap<LocalDate, DayAggregate>
@@ -118,9 +122,36 @@ export function PracticeDashboard({
     [byDate, range.start, range.end, unit, weekStartsOn],
   )
 
-  const peak = series.reduce((high, b) => Math.max(high, b.value), 0)
-  const bucketMean = series.length ? series.reduce((s, b) => s + b.value, 0) / series.length : 0
-  const tone = isNegative ? styles.negative : styles.positive
+  const [plotRef, plotWidth] = useElementWidth(FALLBACK_PLOT_WIDTH)
+
+  /*
+   * The line is drawn through logged buckets only. A blank day is not a zero
+   * here — the day detail says as much — so plotting it as one would both
+   * assert something the record does not, and drag a framed axis back to the
+   * floor. Unlogged days still get a hover target; they just get no point.
+   */
+  const points = useMemo(
+    () =>
+      series
+        .map((bucket, index) => ({ bucket, index }))
+        .filter(({ bucket }) => bucket.value > 0),
+    [series],
+  )
+
+  const scale = useMemo(() => niceDomain(points.map((p) => p.bucket.value)), [points])
+  const observedMean = points.length
+    ? points.reduce((sum, p) => sum + p.bucket.value, 0) / points.length
+    : 0
+
+  const slot = series.length > 0 ? plotWidth / series.length : plotWidth
+  const xAt = (index: number): number => slot * (index + 0.5)
+  const yAt = (value: number): number => {
+    const span = scale.hi - scale.lo || 1
+    return PLOT_HEIGHT - ((value - scale.lo) / span) * PLOT_HEIGHT
+  }
+
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${xAt(p.index).toFixed(2)},${yAt(p.bucket.value).toFixed(2)}`).join(' ')
+  const strokeVar = isNegative ? 'var(--crim)' : 'var(--grn)'
 
   const fmt = (value: number): string => formatValue(model, value)
 
@@ -195,57 +226,115 @@ export function PracticeDashboard({
               {tile.value}
             </div>
             <div className={styles.statLabel}>{tile.label}</div>
-            {tile.hint ? <div className={styles.statHint}>{tile.hint}</div> : null}
           </div>
         ))}
       </div>
 
       <div className={styles.chart}>
-        <div className={styles.axis} aria-hidden="true">
-          <span>{peak > 0 ? fmt(peak) : ''}</span>
-          <span>{peak > 0 ? fmt(0) : ''}</span>
+        <div className={styles.axis} aria-hidden="true" style={{ height: PLOT_HEIGHT }}>
+          {points.length > 0
+            ? [...scale.ticks].reverse().map((tick) => <span key={tick}>{fmt(tick)}</span>)
+            : null}
         </div>
 
         <div className={styles.plotWrap}>
-          <div className={styles.plot} style={{ height: PLOT_HEIGHT }}>
-            <div className={styles.gridTop} aria-hidden="true" />
-            {bucketMean > 0 && peak > 0 ? (
-              <div
-                className={styles.meanLine}
-                style={{ bottom: `${(bucketMean / peak) * 100}%` }}
-                aria-hidden="true"
-              />
-            ) : null}
+          <div className={styles.plot} style={{ height: PLOT_HEIGHT }} ref={plotRef}>
+            <svg
+              className={styles.svg}
+              width={plotWidth}
+              height={PLOT_HEIGHT}
+              viewBox={`0 0 ${plotWidth} ${PLOT_HEIGHT}`}
+              aria-hidden="true"
+              focusable="false"
+            >
+              {scale.ticks.map((tick) => (
+                <line
+                  key={tick}
+                  className={styles.grid}
+                  x1={0}
+                  x2={plotWidth}
+                  y1={yAt(tick)}
+                  y2={yAt(tick)}
+                />
+              ))}
 
-            {series.map((bucket, index) => {
-              const percent =
-                peak > 0 && bucket.value > 0
-                  ? Math.max(MIN_VISIBLE_PERCENT, (bucket.value / peak) * 100)
-                  : 0
-              const label = bucketLabel(bucket, unit, model, isNegative)
-              const clickable = unit === 'day'
-              return (
-                <button
-                  key={bucket.key}
-                  type="button"
-                  className={styles.column}
-                  aria-label={label}
-                  disabled={!clickable}
-                  onClick={clickable ? () => onSelectDate(bucket.start) : undefined}
-                  onMouseEnter={() => setHovered(index)}
-                  onMouseLeave={() => setHovered((h) => (h === index ? null : h))}
-                  onFocus={() => setHovered(index)}
-                  onBlur={() => setHovered((h) => (h === index ? null : h))}
-                >
-                  <span
-                    className={`${styles.bar} ${tone} ${bucket.isPartial ? styles.partial : ''} ${
-                      bucket.value > 0 ? '' : styles.barEmpty
-                    }`}
-                    style={{ height: `${percent}%` }}
+              {observedMean > 0 ? (
+                <line
+                  className={styles.mean}
+                  x1={0}
+                  x2={plotWidth}
+                  y1={yAt(observedMean)}
+                  y2={yAt(observedMean)}
+                />
+              ) : null}
+
+              {hovered !== null && series[hovered]?.value ? (
+                <line
+                  className={styles.crosshair}
+                  x1={xAt(hovered)}
+                  x2={xAt(hovered)}
+                  y1={0}
+                  y2={PLOT_HEIGHT}
+                />
+              ) : null}
+
+              {points.length > 1 ? (
+                <path
+                  d={linePath}
+                  fill="none"
+                  stroke={strokeVar}
+                  strokeWidth={2}
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+              ) : null}
+
+              {/* Markers carry a surface ring so they stay legible where the
+                  line doubles back over itself. */}
+              {points.length <= MAX_DOTS
+                ? points.map((p) => (
+                    <circle
+                      key={p.bucket.key}
+                      cx={xAt(p.index)}
+                      cy={yAt(p.bucket.value)}
+                      r={hovered === p.index ? 5.5 : 4}
+                      fill={strokeVar}
+                      className={styles.dot}
+                    />
+                  ))
+                : null}
+
+              {/* With the markers suppressed, the hovered point still shows. */}
+              {points.length > MAX_DOTS && hovered !== null && series[hovered]?.value ? (
+                <circle
+                  cx={xAt(hovered)}
+                  cy={yAt(series[hovered]?.value ?? 0)}
+                  r={5.5}
+                  fill={strokeVar}
+                  className={styles.dot}
+                />
+              ) : null}
+            </svg>
+
+            <div className={styles.hits}>
+              {series.map((bucket, index) => {
+                const clickable = unit === 'day'
+                return (
+                  <button
+                    key={bucket.key}
+                    type="button"
+                    className={styles.hit}
+                    aria-label={bucketLabel(bucket, unit, model, isNegative)}
+                    disabled={!clickable}
+                    onClick={clickable ? () => onSelectDate(bucket.start) : undefined}
+                    onMouseEnter={() => setHovered(index)}
+                    onMouseLeave={() => setHovered((h) => (h === index ? null : h))}
+                    onFocus={() => setHovered(index)}
+                    onBlur={() => setHovered((h) => (h === index ? null : h))}
                   />
-                </button>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
 
           <div className={styles.ticks} aria-hidden="true">
@@ -258,7 +347,11 @@ export function PracticeDashboard({
 
           {hovered !== null && series[hovered] ? (
             <div className={styles.tooltip} role="status">
-              <span className={styles.tooltipValue}>{fmt((series[hovered] as SeriesBucket).value)}</span>
+              <span className={styles.tooltipValue}>
+                {(series[hovered] as SeriesBucket).value > 0
+                  ? fmt((series[hovered] as SeriesBucket).value)
+                  : 'Nothing logged'}
+              </span>
               <span className={styles.tooltipWhen}>
                 {bucketWhen(series[hovered] as SeriesBucket, unit)}
               </span>
@@ -267,15 +360,21 @@ export function PracticeDashboard({
         </div>
       </div>
 
-      {bucketMean > 0 ? (
+      {points.length > 0 ? (
         <p className={styles.legend}>
-          <span className={styles.legendLine} aria-hidden="true" />
-          avg {fmt(bucketMean)} per {unit}
+          <span className={styles.legendSwatch} data-tone={isNegative ? 'negative' : 'positive'} aria-hidden="true" />
+          {bucketWord(unit)} total
           <span className={styles.legendSep} aria-hidden="true">
             ·
           </span>
-          <span className={styles.legendSwatch} data-tone={isNegative ? 'negative' : 'positive'} aria-hidden="true" />
-          {bucketWord(unit)} total
+          <span className={styles.legendLine} aria-hidden="true" />
+          avg {fmt(observedMean)}
+          <span className={styles.legendSep} aria-hidden="true">
+            ·
+          </span>
+          {/* The axis is framed to the data, so say so rather than let the
+              floor be read as zero. */}
+          <span>scale {fmt(scale.lo)}–{fmt(scale.hi)}</span>
         </p>
       ) : null}
 
@@ -306,7 +405,6 @@ function unitWord(model: TrackingModel, value: number): string {
 interface StatTile {
   value: string
   label: string
-  hint?: string
   lead?: boolean
 }
 
@@ -328,26 +426,16 @@ function statTiles(model: TrackingModel, stats: PeriodStats, isNegative: boolean
       label: model === 'duration' ? 'total practice' : `total ${unitWord(model, stats.total)}`,
       lead: true,
     },
-    {
-      value: fmt(stats.averagePerElapsedDay),
-      label: 'per day',
-      hint: `over ${pluralize(stats.elapsedDays, 'day')}`,
-    },
-    {
-      value: fmt(stats.averagePerActiveDay),
-      label: 'per active day',
-      hint: `over ${pluralize(stats.activeDays, 'logged day')}`,
-    },
+    // The two denominators these used to spell out are in the footnote's
+    // "N of M days logged", so a row of four fits without losing them.
+    { value: fmt(stats.averagePerElapsedDay), label: 'per day' },
+    { value: fmt(stats.averagePerActiveDay), label: 'per active day' },
   ]
 
   // A percentile over ones and twos says nothing; a completion habit's daily
   // value is just how many times the box was ticked.
   if (model === 'duration' || model === 'count') {
-    tiles.push({
-      value: fmt(stats.p90),
-      label: 'p90 day',
-      hint: 'top 10% start here',
-    })
+    tiles.push({ value: fmt(stats.p90), label: 'p90 day' })
   } else {
     tiles.push({ value: String(stats.activeDays), label: 'active days' })
   }

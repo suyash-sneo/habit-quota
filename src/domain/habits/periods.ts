@@ -288,3 +288,36 @@ export function bucketSeries(
     }
   })
 }
+
+/* -------------------------------------------------------------- the scale */
+
+export interface Scale {
+  lo: number
+  hi: number
+  /** Low, middle and high, for three gridlines. */
+  ticks: number[]
+}
+
+/**
+ * A y-range that frames the observations rather than starting at zero.
+ *
+ * A line encodes change through its slope, so it does not need a zero
+ * baseline the way a bar does — a bar's *length* is the quantity, and cutting
+ * the axis lies about it. Framing the data instead means an hour's practice
+ * and fifty minutes' are visibly different, which on a 0–60 axis they are not.
+ *
+ * The padding is a sixth of the spread, at least one unit, so the extremes
+ * never sit on the frame. It stops at zero because negative practice is not a
+ * thing, and a flat series is given room proportional to its own value.
+ */
+export function niceDomain(values: readonly number[]): Scale {
+  if (values.length === 0) return { lo: 0, hi: 1, ticks: [0, 1] }
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const spread = max - min
+  const pad = spread === 0 ? Math.max(1, Math.ceil(max * 0.1)) : Math.max(1, Math.ceil(spread / 6))
+  const lo = Math.max(0, Math.floor(min - pad))
+  const hi = Math.ceil(max + pad)
+  const mid = Math.round((lo + hi) / 2)
+  return { lo, hi, ticks: mid > lo && mid < hi ? [lo, mid, hi] : [lo, hi] }
+}
